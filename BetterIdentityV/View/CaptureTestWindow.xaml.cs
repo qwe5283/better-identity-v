@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using BetterIdentityV.GameCapture;
+using BetterIdentityV.GameTask;
 using BetterIdentityV.Helpers.Extensions;
 using Wpf.Ui.Violeta.Controls;
 using Size = OpenCvSharp.Size;
@@ -44,10 +45,12 @@ public partial class CaptureTestWindow : Window
         }
 
         _capture = GameCaptureFactory.Create(captureMode);
+        var captureAreaHandle = SystemControl.FindCaptureAreaHandle(hWnd);
         _capture.Start(hWnd,
             new Dictionary<string, object>()
             {
-                { "autoFixWin11BitBlt", true }
+                { "autoFixWin11BitBlt", true },
+                { "captureAreaHandle", captureAreaHandle }
             }
         );
 
