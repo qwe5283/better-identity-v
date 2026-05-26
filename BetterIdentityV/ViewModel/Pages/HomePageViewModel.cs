@@ -1,0 +1,179 @@
+﻿using System.Diagnostics;
+using System.Windows.Interop;
+using BetterIdentityV.Core.Config;
+using BetterIdentityV.Helpers;
+using BetterIdentityV.Model;
+using BetterIdentityV.GameCapture;
+using BetterIdentityV.GameTask;
+using BetterIdentityV.Service.Interface;
+using BetterIdentityV.View;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Wpf.Ui.Violeta.Controls;
+
+namespace BetterIdentityV.ViewModel.Pages;
+
+public partial class HomePageViewModel : ViewModel
+{
+    [ObservableProperty]
+    private IEnumerable<EnumItem<CaptureModes>> _modeNames = EnumExtensions.ToEnumItems<CaptureModes>();
+    
+    [ObservableProperty]
+    private string? _selectedMode = CaptureModes.BitBlt.ToString();
+    
+    [ObservableProperty]
+    private bool _taskDispatcherEnabled = false;
+    
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(StartTriggerCommand))]
+    private bool _startButtonEnabled = true;
+    
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(StopTriggerCommand))]
+    private bool _stopButtonEnabled = true;
+    
+    public AllConfig Config { get; set; }
+    
+    private MaskWindow? _maskWindow;
+    
+    private readonly TaskTriggerDispatcher _taskDispatcher;
+    
+    // 记录上次使用游戏的句柄
+    private IntPtr _hWnd;
+
+    public HomePageViewModel(IConfigService configService, TaskTriggerDispatcher taskTriggerDispatcher)
+    {
+        _taskDispatcher = taskTriggerDispatcher;
+        Config = configService.Get();
+    }
+    
+    private bool CanStartTrigger() => StartButtonEnabled;
+
+    [RelayCommand(CanExecute = nameof(CanStartTrigger))]
+    public async Task OnStartTriggerAsync()
+    {
+        var hWnd = SystemControl.FindGameHandle();
+        if (hWnd == IntPtr.Zero)
+        {
+            await MessageBox.ErrorAsync("未找到第五人格或MuMu模拟器窗口，请先启动游戏！");
+            return;
+        }
+
+        Start(hWnd);
+    }
+
+    private void Start(IntPtr hWnd)
+    {
+        Debug.WriteLine($"游戏启动句柄{hWnd}");
+        lock (this)
+        {
+            if (Config.TriggerInterval <= 0)
+            {
+                MessageBox.Error("触发器触发频率必须大于0");
+                return;
+            }
+
+            if (!TaskDispatcherEnabled)
+            {
+                _hWnd = hWnd;
+                _taskDispatcher.Start(hWnd, GetCaptureMode(), Config.TriggerInterval);
+                _taskDispatcher.UiTaskStopTickEvent -= OnUiTaskStopTick;
+                _taskDispatcher.UiTaskStartTickEvent -= OnUiTaskStartTick;
+                _taskDispatcher.UiTaskStopTickEvent += OnUiTaskStopTick;
+                _taskDispatcher.UiTaskStartTickEvent += OnUiTaskStartTick;
+                _maskWindow ??= new MaskWindow(); // 延迟初始化
+                _maskWindow.Show();
+                MaskWindow.Instance().RefreshPosition();
+                TaskDispatcherEnabled = true;
+            }
+        }
+    }
+    
+    private CaptureModes GetCaptureMode()
+    {
+        return Config.CaptureMode.ToCaptureMode();
+    }
+
+    /// <summary>
+    /// 捕获测试命令
+    /// </summary>
+    [RelayCommand]
+    private void OnStartCaptureTest()
+    {
+        var picker = new PickerWindow(true);
+        
+        if (picker.PickCaptureTarget(new WindowInteropHelper(UIDispatcherHelper.MainWindow).Handle, out var hWnd))
+        {
+            if (hWnd != IntPtr.Zero)
+            {
+                var captureWindow = new CaptureTestWindow();
+                captureWindow.StartCapture(hWnd, Config.CaptureMode.ToCaptureMode());
+                captureWindow.Show();
+            }
+            else
+            {
+                MessageBox.Error("选择的窗体句柄为空");
+            }
+        }
+    }
+    
+    [RelayCommand]
+    private void OnManualPickWindow()
+    {
+        var picker = new PickerWindow();
+        if (picker.PickCaptureTarget(new WindowInteropHelper(UIDispatcherHelper.MainWindow).Handle, out var hWnd))
+        {
+            if (hWnd != IntPtr.Zero)
+            {
+                _hWnd = hWnd;
+                Start(hWnd);
+            }
+            else
+            {
+                MessageBox.Error("选择的窗体句柄为空！");
+            }
+        }
+    }
+    
+    private bool CanStopTrigger() => StopButtonEnabled;
+
+    [RelayCommand(CanExecute = nameof(CanStopTrigger))]
+    private void OnStopTrigger()
+    {
+        Stop();
+    }
+
+    private void Stop()
+    {
+        lock (this)
+        {
+            if (TaskDispatcherEnabled)
+            {
+                _taskDispatcher.Stop();
+                if (_maskWindow != null && _maskWindow.IsExist())
+                {
+                    _maskWindow?.Hide();
+                }
+                else
+                {
+                    _maskWindow?.Close();
+                    _maskWindow = null;
+                }
+                
+                TaskDispatcherEnabled = false;
+                TaskContext.Instance().IsInitialized = false;
+            }
+        }
+    }
+    
+    private void OnUiTaskStopTick(object? sender, EventArgs e)
+    {
+        UIDispatcherHelper.Invoke(Stop);
+    }
+
+    private void OnUiTaskStartTick(object? sender, EventArgs e)
+    {
+        UIDispatcherHelper.Invoke(() => Start(_hWnd));
+    }
+
+}
