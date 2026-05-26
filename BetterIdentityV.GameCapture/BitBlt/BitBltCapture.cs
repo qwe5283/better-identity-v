@@ -10,6 +10,7 @@ public class BitBltCapture : IGameCapture
     private readonly Stopwatch _sizeCheckTimer = new();
     private readonly ReaderWriterLockSlim _lockSlim = new();
     private volatile nint _hWnd; // 需要加锁
+    private volatile nint _captureAreaHandle; // 需要加锁
     private BitBltSession? _session; // 需要加锁
 
     private volatile bool _lastCaptureFailed;
@@ -38,6 +39,7 @@ public class BitBltCapture : IGameCapture
             {
                 return;
             }
+            _captureAreaHandle = CaptureSettings.GetCaptureAreaHandle(hWnd, settings);
 
             _session?.Dispose();
             _session = null;
@@ -74,6 +76,7 @@ public class BitBltCapture : IGameCapture
                 _session = null;
             }
 
+            var captureHandle = _captureAreaHandle == IntPtr.Zero ? _hWnd : _captureAreaHandle;
             if (!User32.GetClientRect(_hWnd, out var windowRect) || windowRect == default)
             {
                 //    Debug.Fail("Failed to get client rectangle");
@@ -98,7 +101,7 @@ public class BitBltCapture : IGameCapture
                 _session.Dispose();
             }
 
-            _session = new BitBltSession(_hWnd, width, height);
+            _session = new BitBltSession(captureHandle, width, height);
         }
         catch (Exception e)
         {
@@ -191,6 +194,7 @@ public class BitBltCapture : IGameCapture
         try
         {
             _hWnd = IntPtr.Zero;
+            _captureAreaHandle = IntPtr.Zero;
             _sizeCheckTimer.Stop();
             if (_session != null)
             {

@@ -26,6 +26,7 @@ public class GraphicsCapture(bool captureHdr = false) : IGameCapture
     public bool IsCapturing { get; private set; }
 
     private ResourceRegion? _region;
+    private nint _captureAreaHandle;
 
     // HDR相关
     private bool _isHdrEnabled = captureHdr;
@@ -57,8 +58,9 @@ public class GraphicsCapture(bool captureHdr = false) : IGameCapture
     public void Start(nint hWnd, Dictionary<string, object>? settings = null)
     {
         _hWnd = hWnd;
+        _captureAreaHandle = CaptureSettings.GetCaptureAreaHandle(hWnd, settings);
 
-        _region = GetGameScreenRegion(hWnd);
+        _region = GetGameScreenRegion(hWnd, _captureAreaHandle);
 
         IsCapturing = true;
 
@@ -130,8 +132,15 @@ public class GraphicsCapture(bool captureHdr = false) : IGameCapture
     /// </summary>
     /// <param name="hWnd"></param>
     /// <returns></returns>
-    private static ResourceRegion? GetGameScreenRegion(nint hWnd)
+    private static ResourceRegion? GetGameScreenRegion(nint hWnd, nint captureAreaHandle)
     {
+        if (CaptureSettings.UsesCaptureAreaHandle(hWnd, captureAreaHandle))
+        {
+            DwmApi.DwmGetWindowAttribute<RECT>(hWnd, DwmApi.DWMWINDOWATTRIBUTE.DWMWA_EXTENDED_FRAME_BOUNDS,
+                out var sourceWindowRect);
+            return CaptureSettings.CreateRelativeRegionFromScreenOrigin(captureAreaHandle, sourceWindowRect.Left, sourceWindowRect.Top);
+        }
+        
         var exStyle = User32.GetWindowLong(hWnd, User32.WindowLongFlags.GWL_EXSTYLE);
         if ((exStyle & (int)User32.WindowStylesEx.WS_EX_TOPMOST) != 0)
         {
@@ -223,7 +232,7 @@ public class GraphicsCapture(bool captureHdr = false) : IGameCapture
                 _stagingTexture = null;
                 _surfaceWidth = captureSize.Width;
                 _surfaceHeight = captureSize.Height;
-                _region = GetGameScreenRegion(_hWnd);
+                _region = GetGameScreenRegion(_hWnd, _captureAreaHandle);
                 return;
             }
 
