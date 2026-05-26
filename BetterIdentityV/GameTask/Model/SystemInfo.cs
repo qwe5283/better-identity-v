@@ -56,7 +56,11 @@ public class SystemInfo : ISystemInfo
     
     public DesktopRegion DesktopRectArea { get; }
 
-    public SystemInfo(IntPtr hWnd)
+    public SystemInfo(IntPtr hWnd) : this(hWnd, hWnd)
+    {
+    }
+
+    public SystemInfo(IntPtr hWnd, IntPtr captureAreaHandle)
     {
         var p = SystemControl.GetProcessByHandle(hWnd);
         GameProcess = p ?? throw new ArgumentException("通过句柄获取游戏进程失败");
@@ -65,6 +69,9 @@ public class SystemInfo : ISystemInfo
 
         DisplaySize = PrimaryScreen.WorkingArea;
         DesktopRectArea = new DesktopRegion();
+
+        if (captureAreaHandle == IntPtr.Zero)
+            captureAreaHandle = hWnd;
         
         // 判断最小化
         if (User32.IsIconic(hWnd))

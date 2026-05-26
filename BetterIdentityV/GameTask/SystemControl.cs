@@ -9,6 +9,40 @@ public class SystemControl
     {
         return FindHandleByProcessName("dwrg", "MuMuNxDevice");
     }
+
+    /// <summary>
+    /// 获取捕获窗口句柄，当传入MuMu模拟器的顶层窗口时返回MuMu渲染窗口，否则返回传入值
+    /// </summary>
+    /// <param name="hWnd">顶层窗口句柄</param>
+    /// <returns>要捕获窗口的句柄</returns>
+    public static nint FindCaptureAreaHandle(nint hWnd)
+    {
+        if (hWnd == 0)
+            return 0;
+
+        if (IsMuMulatorWindow(hWnd))
+        {
+            var renderHandle = FindMuMuRenderHandle(hWnd);
+            if (renderHandle != 0)
+                return renderHandle;
+        }
+
+        return hWnd;
+    }
+    
+    public static nint FindMuMuRenderHandle(nint muMuTopWindowHwnd)
+    {
+        if (muMuTopWindowHwnd == 0)
+            return 0;
+
+        return (nint)User32.FindWindowEx(muMuTopWindowHwnd, IntPtr.Zero, "Qt5156QWindowIcon", "MuMuNxDevice");
+    }
+    
+    public static bool IsMuMulatorWindow(nint hWnd)
+    {
+        var process = GetProcessByHandle(hWnd);
+        return process?.ProcessName == "MuMuNxDevice";
+    }
     
     public static bool IsGameActive()
     {
@@ -89,6 +123,14 @@ public class SystemControl
     /// <returns>裁剪掉标题栏的窗口区域</returns>
     public static RECT GetCaptureRect(nint hWnd)
     {
+        if (IsChildWindow(hWnd))
+        {
+            User32.GetClientRect(hWnd, out var childClientRect);
+            POINT point = default;
+            User32.ClientToScreen(hWnd, ref point);
+            return new RECT(point.X, point.Y, point.X + childClientRect.Width, point.Y + childClientRect.Height);
+        }
+        
         var windowRect = GetWindowRect(hWnd);
         var gameScreenRect = GetGameScreenRect(hWnd);
         var left = windowRect.Left;
@@ -96,6 +138,12 @@ public class SystemControl
         var right = left + gameScreenRect.Width;
         var bottom = top + gameScreenRect.Height;
         return new RECT(left, top, right, bottom);
+    }
+    
+    public static bool IsChildWindow(nint hWnd)
+    {
+        var style = User32.GetWindowLong(hWnd, User32.WindowLongFlags.GWL_STYLE);
+        return (style & (int)User32.WindowStyles.WS_CHILD) != 0;
     }
     
     public static void ActivateWindow(nint hWnd)

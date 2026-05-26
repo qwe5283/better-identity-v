@@ -74,7 +74,8 @@ public class TaskTriggerDispatcher : IDisposable
         SystemControl.ActivateWindow(hWnd);
         
         // 初始化任务上下文(一定要在初始化触发器前完成)
-        TaskContext.Instance().Init(hWnd);
+        var captureAreaHandle = SystemControl.FindCaptureAreaHandle(hWnd);
+        TaskContext.Instance().Init(hWnd, captureAreaHandle);
         
         // 初始化触发器(一定要在任务上下文初始化完毕后使用)
         _triggers = GameTaskManager.LoadInitialTriggers();
@@ -254,7 +255,7 @@ public class TaskTriggerDispatcher : IDisposable
     /// <returns></returns>
     private bool SyncMaskWindowPosition()
     {
-        var hWnd = TaskContext.Instance().GameHandle;
+        var hWnd = TaskContext.Instance().CaptureAreaHandle;
         var currentRect = SystemControl.GetCaptureRect(hWnd);
         if(_gameRect == RECT.Empty)
         {

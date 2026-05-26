@@ -25,9 +25,15 @@ public class TaskContext
 
     public void Init(IntPtr hWnd)
     {
+        Init(hWnd, SystemControl.FindCaptureAreaHandle(hWnd));
+    }
+
+    public void Init(IntPtr hWnd, IntPtr captureAreaHandle)
+    {
         GameHandle = hWnd;
+        CaptureAreaHandle = captureAreaHandle == IntPtr.Zero ? hWnd : captureAreaHandle;
         PostMessageSimulator = Simulation.PostMessage(GameHandle);
-        SystemInfo = new SystemInfo(hWnd);
+        SystemInfo = new SystemInfo(hWnd, CaptureAreaHandle);
         DpiScale = DpiHelper.ScaleY;
         IsInitialized = true;
     }
@@ -35,6 +41,11 @@ public class TaskContext
     public bool IsInitialized { get; set; }
 
     public IntPtr GameHandle { get; set; }
+    
+    /// <summary>
+    /// 对于客户端来说，捕获区句柄就是游戏窗口。对于MuMu模拟器来说，捕获区句柄就是其中嵌套的子窗口。
+    /// </summary>
+    public IntPtr CaptureAreaHandle { get; set; }
     
     public PostMessageSimulator PostMessageSimulator { get; private set; }
     
