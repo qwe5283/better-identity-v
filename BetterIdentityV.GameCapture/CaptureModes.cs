@@ -8,9 +8,9 @@ public enum CaptureModes
     [DefaultValue(0)]
     BitBlt = 0,
 
-    // [Description("DwmGetDxSharedSurface")]
-    // [DefaultValue(1)]
-    // DwmGetDxSharedSurface = 2,
+    [Description("DwmGetDxSharedSurface")]
+    [DefaultValue(1)]
+    DwmGetDxSharedSurface = 2,
 
     [Description("WindowsGraphicsCapture")]
     [DefaultValue(2)]

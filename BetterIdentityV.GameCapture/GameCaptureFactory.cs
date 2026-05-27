@@ -12,7 +12,7 @@ public class GameCaptureFactory
         return mode switch
         {
             CaptureModes.BitBlt => new BitBlt.BitBltCapture(),
-            // CaptureModes.DwmGetDxSharedSurface => new DwmSharedSurface.SharedSurfaceCapture(),
+            CaptureModes.DwmGetDxSharedSurface => new DwmSharedSurface.SharedSurfaceCapture(),
             CaptureModes.WindowsGraphicsCapture => new Graphics.GraphicsCapture(),
             CaptureModes.WindowsGraphicsCaptureHdr => new Graphics.GraphicsCapture(true),
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
