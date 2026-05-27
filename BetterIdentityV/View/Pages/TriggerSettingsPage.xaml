@@ -39,5 +39,28 @@
             </ui:CardControl.Header>
             <ui:ToggleSwitch Margin="0,0,40,0" IsChecked="{Binding Config.AutoQTEConfig.Enabled, Mode=TwoWay}" />
         </ui:CardControl>
+        <!-- 自动拾取 -->
+        <ui:CardControl Margin="0,0,0,12"
+                        Icon="{ui:SymbolIcon HandWave24}">
+            <ui:CardControl.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="自动拾取"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="道具栏为空且附近有可拾取道具时，自动按下拾取"
+                                  TextWrapping="Wrap" />
+                </Grid>
+            </ui:CardControl.Header>
+            <ui:ToggleSwitch Margin="0,0,40,0" IsChecked="{Binding Config.AutoPickConfig.Enabled, Mode=TwoWay}" />
+        </ui:CardControl>
     </StackPanel>
 </Page>

@@ -64,4 +64,8 @@
       <ProjectReference Include="..\BetterIdentityV.WindowsInput\BetterIdentityV.WindowsInput.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="GameTask\AutoPick\Assets\" />
+    </ItemGroup>
+
 </Project>

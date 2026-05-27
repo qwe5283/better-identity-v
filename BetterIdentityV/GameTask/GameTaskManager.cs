@@ -18,6 +18,7 @@ public class GameTaskManager
         TriggerDictionary = new ConcurrentDictionary<string, ITaskTrigger>();
 
         TriggerDictionary.TryAdd("AutoQTE", new AutoQTE.AutoQTETrigger());
+        TriggerDictionary.TryAdd("AutoPick", new AutoPick.AutoPickTrigger());
         
         return ConvertToTriggerList();
     }
@@ -46,6 +47,7 @@ public class GameTaskManager
         if (TriggerDictionary is { Count: > 0 })
         {
             TriggerDictionary.GetValueOrDefault("AutoQTE")?.Init();
+            TriggerDictionary.GetValueOrDefault("AutoPick")?.Init();
             // 清理画布
             VisionContext.Instance().DrawContent.ClearAll();
         }
