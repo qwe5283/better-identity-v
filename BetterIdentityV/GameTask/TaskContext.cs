@@ -33,6 +33,7 @@ public class TaskContext
         GameHandle = hWnd;
         CaptureAreaHandle = captureAreaHandle == IntPtr.Zero ? hWnd : captureAreaHandle;
         PostMessageSimulator = Simulation.PostMessage(GameHandle);
+        // TODO: 捕获ArgumentException
         SystemInfo = new SystemInfo(hWnd, CaptureAreaHandle);
         DpiScale = DpiHelper.ScaleY;
         IsInitialized = true;

@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using System.Collections.ObjectModel;
+using System.Windows;
 using BetterIdentityV.Core.Config;
+using BetterIdentityV.Model;
 using BetterIdentityV.Service.Interface;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,6 +12,8 @@ public partial class MaskWindowViewModel : ObservableRecipient
 {
     [ObservableProperty] private Rect _windowRect;
     
+    [ObservableProperty] private ObservableCollection<StatusItem> _statusList = [];
+    
     public AllConfig? Config { get; set; }
     
     public MaskWindowViewModel()
@@ -18,12 +22,19 @@ public partial class MaskWindowViewModel : ObservableRecipient
         
     }
     
+    private void InitializeStatusList()
+    {
+        if (Config != null)
+        {
+            StatusList.Add(new StatusItem("\u26a1 校准", Config.AutoQTEConfig));
+        }
+    }
+    
     [RelayCommand]
     private void OnLoaded()
     {
         RefreshSettings();
-        // InitializeStatusList();
-        // InitFps();
+        InitializeStatusList();
     }
     
     private void RefreshSettings()

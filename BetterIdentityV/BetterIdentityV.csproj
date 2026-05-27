@@ -55,6 +55,8 @@
       <Resource Include="Resources\Images\banner1.jpg" />
       <None Remove="Resources\Images\logo.ico" />
       <Resource Include="Resources\Images\logo.ico" />
+      <None Remove="Resources\Fonts\Fgi-Regular.ttf" />
+      <Resource Include="Resources\Fonts\Fgi-Regular.ttf" />
     </ItemGroup>
 
     <ItemGroup>

@@ -10,6 +10,7 @@
                  <ui:ThemesDictionary Theme="Light" />
                  <ui:ControlsDictionary />
                  <vio:ControlsDictionary />
+                 <ResourceDictionary Source="/View/Controls/WpfUi/FaFontIconStyle.xaml" />
              </ResourceDictionary.MergedDictionaries>
              
              <FontFamily x:Key="TextThemeFontFamily">/Resources/Fonts/POP1W5.ttf#DFPOP1W5-GB</FontFamily>
