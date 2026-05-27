@@ -81,9 +81,14 @@ public class TaskTriggerDispatcher : IDisposable
         _triggers = GameTaskManager.LoadInitialTriggers();
         
         // 启动截图
-        GameCapture.Start(hWnd);
+        GameCapture.Start(hWnd, 
+            new Dictionary<string, object>()
+            {
+                { "captureAreaHandle", captureAreaHandle }
+            });
         
         // 启动定时器
+        _frameIndex = 0;
         _timer.Interval = interval;
         if (!_timer.Enabled)
         {

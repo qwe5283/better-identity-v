@@ -81,7 +81,7 @@ public class SystemInfo : ISystemInfo
 
         // 注意截图区域要和游戏窗口实际区域一致
         // todo 窗口移动后？
-        GameScreenSize = SystemControl.GetGameScreenRect(hWnd);
+        GameScreenSize = SystemControl.GetGameScreenRect(captureAreaHandle);
         if (GameScreenSize.Width < 800 || GameScreenSize.Height < 600)
         {
             throw new ArgumentException("游戏窗口分辨率不得小于 800x600 ！");
@@ -95,7 +95,7 @@ public class SystemInfo : ISystemInfo
         }
         ScaleTo1080PRatio = GameScreenSize.Width / 1920d; // 1080P 为标准
 
-        CaptureAreaRect = SystemControl.GetCaptureRect(hWnd);
+        CaptureAreaRect = SystemControl.GetCaptureRect(captureAreaHandle);
         if (CaptureAreaRect.Width > 1920)
         {
             var scale = CaptureAreaRect.Width / 1920d;
