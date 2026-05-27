@@ -18,7 +18,7 @@
                       Text="实时触发的自动化任务设置" />
         <!-- 自动校准 -->
         <ui:CardControl Margin="0,0,0,12"
-                        Icon="{ui:SymbolIcon HandWave24}">
+                        Icon="{ui:SymbolIcon Flash24}">
             <ui:CardControl.Header>
                 <Grid>
                     <Grid.RowDefinitions>
