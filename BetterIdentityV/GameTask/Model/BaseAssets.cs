@@ -25,6 +25,10 @@ public class BaseAssets<T> : Singleton<T> where T : class
     }
 
     protected Rect CaptureRect => systemInfo.ScaleMax1080PCaptureRect;
+    
+    /// <summary>
+    /// 资源缩放倍数，通常用于在游戏分辨率小于1080P基准时缩小模板和ROI。计算方式为: 截图帧宽 / 1920
+    /// </summary>
     protected double AssetScale => systemInfo.AssetScale;
 
 }
