@@ -2,6 +2,7 @@
 using System.IO;
 using BetterIdentityV.Core.Config;
 using BetterIdentityV.Core.Recognition.OpenCv;
+using BetterIdentityV.GameTask.AutoPick.Assets;
 using BetterIdentityV.GameTask.Model;
 using BetterIdentityV.View.Drawable;
 using OpenCvSharp;
@@ -19,7 +20,7 @@ public class GameTaskManager
     /// <returns></returns>
     public static List<ITaskTrigger> LoadInitialTriggers()
     {
-        // ReloadAssets();
+        ReloadAssets();
         TriggerDictionary = new ConcurrentDictionary<string, ITaskTrigger>();
 
         TriggerDictionary.TryAdd("AutoQTE", new AutoQTE.AutoQTETrigger());
@@ -57,6 +58,12 @@ public class GameTaskManager
             VisionContext.Instance().DrawContent.ClearAll();
         }
         
+        ReloadAssets();
+    }
+    
+    public static void ReloadAssets()
+    {
+        AutoPickAssets.DestroyInstance();
     }
     
     /// <summary>
