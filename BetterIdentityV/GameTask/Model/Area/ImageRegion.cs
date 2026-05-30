@@ -9,6 +9,7 @@ using OpenCvSharp;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Point = OpenCvSharp.Point;
+using Size = OpenCvSharp.Size;
 
 namespace BetterIdentityV.GameTask.Model.Area;
 
@@ -109,6 +110,13 @@ public class ImageRegion : Region
                 }
 
                 roi = new Mat(roi, ro.RegionOfInterest);
+            }
+
+            if (ro.BlurSigma > 0)
+            {
+                // TODO: roi是引用类型，对roi高斯模糊会影响后续判断
+                roi = roi.GaussianBlur(new Size(0, 0), ro.BlurSigma);
+                template = template.GaussianBlur(new Size(0, 0), ro.BlurSigma);
             }
 
             var p = MatchTemplateHelper.MatchTemplate(roi, template, ro.TemplateMatchMode, ro.MaskMat, ro.Threshold);
