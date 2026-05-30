@@ -119,14 +119,14 @@ public class ImageRegion : Region
                 template = template.GaussianBlur(new Size(0, 0), ro.BlurSigma);
             }
 
-            var p = MatchTemplateHelper.MatchTemplate(roi, template, ro.TemplateMatchMode, ro.MaskMat, ro.Threshold);
+            var (p, confidence) = MatchTemplateHelper.MatchTemplateGetConfidence(roi, template, ro.TemplateMatchMode, ro.MaskMat, ro.Threshold);
             if (p != new Point())
             {
                 var newRa = Derive(p.X + ro.RegionOfInterest.X, p.Y + ro.RegionOfInterest.Y, template.Width,
                     template.Height);
                 if (ro.DrawOnWindow && !string.IsNullOrEmpty(ro.Name))
                 {
-                    newRa.DrawSelf(ro.Name, ro.DrawOnWindowPen);
+                    newRa.DrawSelf(ro.Name, ro.DrawOnWindowPen, confidence);
                 }
 
                 successAction?.Invoke(newRa);

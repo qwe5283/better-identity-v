@@ -24,6 +24,12 @@ public class MatchTemplateHelper
     /// <returns>左上角的标点,由于(0,0)点作为未匹配的结果，所以不能做完全相同的模板匹配</returns>
     public static Point MatchTemplate(Mat srcMat, Mat dstMat, TemplateMatchModes matchMode, Mat? maskMat = null, double threshold = 0.8)
     {
+        var (p, _) = MatchTemplateGetConfidence(srcMat, dstMat, matchMode, maskMat, threshold);
+        return p;
+    }
+
+    public static (Point, double) MatchTemplateGetConfidence(Mat srcMat, Mat dstMat, TemplateMatchModes matchMode, Mat? maskMat = null, double threshold = 0.8)
+    {
         try
         {
             using var result = new Mat();
@@ -40,14 +46,15 @@ public class MatchTemplateHelper
             {
                 if (minValue <= 1 - threshold)
                 {
-                    return minLoc;
+                    double confidence = 1 - minValue / 1 - (1 - threshold);
+                    return (minLoc, confidence);
                 }
             }
             else
             {
                 if (maxValue >= threshold)
                 {
-                    return maxLoc;
+                    return (maxLoc, maxValue);
                 }
             }
 

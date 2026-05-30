@@ -183,8 +183,8 @@ public partial class MaskWindow : Window
                         drawingContext.DrawText(new FormattedText(drawable.Text,
                             CultureInfo.GetCultureInfo("zh-cn"),
                             FlowDirection.LeftToRight,
-                            _typeface,
-                            36, Brushes.Black, 1), drawable.Point);
+                            new Typeface(_typeface.FontFamily, _typeface.Style, FontWeights.Bold, _typeface.Stretch),
+                            12, Brushes.Red, 1), drawable.Point);
                     }
                 }
             }

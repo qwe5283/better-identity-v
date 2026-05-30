@@ -82,10 +82,11 @@ public class Region : IDisposable
     /// </summary>
     /// <param name="name"></param>
     /// <param name="pen"></param>
-    public void DrawSelf(string name, Pen? pen = null)
+    /// <param name="confidence"></param>
+    public void DrawSelf(string name, Pen? pen = null, double? confidence = null)
     {
         // 相对自己是 0, 0 坐标
-        DrawRect(0, 0, Width, Height, name, pen);
+        DrawRect(0, 0, Width, Height, name, pen, confidence);
     }
     
     /// <summary>
@@ -97,16 +98,17 @@ public class Region : IDisposable
     /// <param name="h"></param>
     /// <param name="name"></param>
     /// <param name="pen"></param>
-    public void DrawRect(int x, int y, int w, int h, string name, Pen? pen = null)
+    /// <param name="confidence"></param>
+    public void DrawRect(int x, int y, int w, int h, string name, Pen? pen = null, double? confidence = null)
     {
         var drawable = ToRectDrawable(x, y, w, h, name, pen);
-        drawContent.PutRect(name, drawable);
+        drawContent.PutRect(name, drawable, confidence);
     }
 
-    public void DrawRect(Rect rect, string name, Pen? pen = null)
+    public void DrawRect(Rect rect, string name, Pen? pen = null, double? confidence = null)
     {
         var drawable = ToRectDrawable(rect.X, rect.Y, rect.Width, rect.Height, name, pen);
-        drawContent.PutRect(name, drawable);
+        drawContent.PutRect(name, drawable, confidence);
     }
     
     /// <summary>
