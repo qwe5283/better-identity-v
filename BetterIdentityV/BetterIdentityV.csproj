@@ -57,15 +57,20 @@
       <Resource Include="Resources\Images\logo.ico" />
       <None Remove="Resources\Fonts\Fgi-Regular.ttf" />
       <Resource Include="Resources\Fonts\Fgi-Regular.ttf" />
+      <None Update="GameTask\AutoPick\Assets\1920x1080\Syringe.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="GameTask\AutoPick\Assets\1920x1080\RugbyBall.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="GameTask\AutoPick\Assets\1920x1080\ElbowPads.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\BetterIdentityV.GameCapture\BetterIdentityV.GameCapture.csproj" />
       <ProjectReference Include="..\BetterIdentityV.WindowsInput\BetterIdentityV.WindowsInput.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="GameTask\AutoPick\Assets\" />
     </ItemGroup>
 
 </Project>
