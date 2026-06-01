@@ -6,16 +6,9 @@
         <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <UseWPF>true</UseWPF>
         <Platforms>x64</Platforms>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -57,13 +50,7 @@
       <Resource Include="Resources\Images\logo.ico" />
       <None Remove="Resources\Fonts\Fgi-Regular.ttf" />
       <Resource Include="Resources\Fonts\Fgi-Regular.ttf" />
-      <None Update="GameTask\AutoPick\Assets\1920x1080\Syringe.png">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="GameTask\AutoPick\Assets\1920x1080\RugbyBall.png">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="GameTask\AutoPick\Assets\1920x1080\ElbowPads.png">
+      <None Update="GameTask\AutoPick\Assets\1920x1080\*.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>
