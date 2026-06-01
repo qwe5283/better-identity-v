@@ -17,9 +17,9 @@ public class AutoPickTrigger : ITaskTrigger
     public int Priority => 30;
     public bool IsExclusive => false;
     
-    private readonly AutoPickAssets _autoPickAssets = AutoPickAssets.Instance;
+    private readonly AutoPickAssets _assets = AutoPickAssets.Instance;
 
-    private PickableItem? _pickItem, _primaryItem, _secondaryItem;
+    private PickableItemType? _pickPrimaryItem, _pickSecondaryItem, _currentPrimaryItem, _currentSecondaryItem;
 
     public void Init()
     {
@@ -29,19 +29,20 @@ public class AutoPickTrigger : ITaskTrigger
 
     public void OnCapture(CaptureContent content)
     {
-        _pickItem = FindPickableItem(content);
-        _primaryItem = FindCurrentItem(content);
-        _secondaryItem = FindCurrentItem(content, false);
+        _pickPrimaryItem = IdentifySlotItem(content, _assets.PickPrimarySlotItemTemplates);
+        _pickSecondaryItem = IdentifySlotItem(content, _assets.PickSecondarySlotItemTemplates);
+        _currentPrimaryItem = IdentifySlotItem(content, _assets.CurrentPrimaryItemTemplates);
+        _currentSecondaryItem = IdentifySlotItem(content, _assets.CurrentSecondaryItemTemplates);
         
-        _logger.LogDebug($"主物品槽:{_primaryItem}, 副物品槽:{_secondaryItem}, 可拾取:{_pickItem}");
+        _logger.LogDebug($"主物品槽:{_currentPrimaryItem}, 副物品槽:{_currentSecondaryItem}, 主可拾取:{_pickPrimaryItem}, 副可拾取:{_pickSecondaryItem}");
 
-        if (_pickItem != null && _primaryItem == null)
+        if (_pickPrimaryItem != null && _currentPrimaryItem == null)
         {
             // 拾取到主物品槽
             _logger.LogInformation("拾取到主物品槽");
             // Simulation.SendInput.Keyboard.KeyPress(_autoPickAssets.PickToPrimarySlotVk);
         }
-        else if (_pickItem != null && _secondaryItem == null)
+        else if (_pickSecondaryItem != null && _currentSecondaryItem == null)
         {
             // 拾取到副物品槽
             _logger.LogInformation("拾取到副物品槽");
@@ -49,60 +50,27 @@ public class AutoPickTrigger : ITaskTrigger
         }
         
     }
-
+    
     /// <summary>
-    /// 检测可拾取的物品
+    /// 识别物品槽中的物品图标
     /// </summary>
+    /// <param name="content">捕获帧</param>
+    /// <param name="Templates">模板识别对象列表</param>
     /// <returns></returns>
-    private PickableItem? FindPickableItem(CaptureContent content)
+    private PickableItemType? IdentifySlotItem(CaptureContent content, Dictionary<PickableItemType, RecognitionObject> Templates)
     {
-        // 镇静剂
-        using Region syringe = content.CaptureRectArea.Find(_autoPickAssets.SyringeRo);
-        if (syringe.IsExist())
-            return PickableItem.Syringe;
-        // 橄榄球
-        using Region rugbyBall = content.CaptureRectArea.Find(_autoPickAssets.RugbyBallRo);
-        if (rugbyBall.IsExist())
-            return PickableItem.RugbyBall;
-        // 护腕
-        using Region elbowPads = content.CaptureRectArea.Find(_autoPickAssets.ElbowPadsRo);
-        if (elbowPads.IsExist())
-            return PickableItem.ElbowPads;
-
-        return null;
-    }
-
-    /// <summary>
-    /// 检测物品栏的物品
-    /// </summary>
-    /// <param name="content">捕获内容</param>
-    /// <param name="findPrimaryItemSlot">true或缺省表示寻找1号物品栏, false表示寻找2号物品栏</param>
-    /// <returns></returns>
-    private PickableItem? FindCurrentItem(CaptureContent content, bool findPrimaryItemSlot = true)
-    {
-        Rect roi = findPrimaryItemSlot
-            ? _autoPickAssets.CurrentPrimaryItemRect
-            : _autoPickAssets.CurrentSecondaryItemRect;
+        if (Templates.Count == 0) return null;
         
-        // 镇静剂
-        RecognitionObject ro = _autoPickAssets.SyringeRo.Clone();
-        ro.RegionOfInterest = roi;
-        using Region syringe = content.CaptureRectArea.Find(ro);
-        if (syringe.IsExist())
-            return PickableItem.Syringe;
-        // 橄榄球
-        ro = _autoPickAssets.RugbyBallRo.Clone();
-        ro.RegionOfInterest = roi;
-        using Region rugbyBall = content.CaptureRectArea.Find(ro);
-        if (rugbyBall.IsExist())
-            return PickableItem.RugbyBall;
-        // 护腕
-        ro = _autoPickAssets.ElbowPadsRo.Clone();
-        ro.RegionOfInterest = roi;
-        using Region elbowPads = content.CaptureRectArea.Find(ro);
-        if (elbowPads.IsExist())
-            return PickableItem.ElbowPads;
+        foreach (var (itemType, ro) in Templates)
+        {
+            var found = content.CaptureRectArea.Find(ro);
+            if (found.IsExist())
+            {
+                return itemType;
+            }
+        }
 
         return null;
     }
+
 }
