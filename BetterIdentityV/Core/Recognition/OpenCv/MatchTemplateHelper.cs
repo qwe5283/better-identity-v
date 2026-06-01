@@ -41,13 +41,18 @@ public class MatchTemplateHelper
             }
 
             Cv2.MinMaxLoc(result, out var minValue, out var maxValue, out var minLoc, out var maxLoc);
-
+            
+            if (double.IsInfinity(maxValue) || double.IsInfinity(minValue))
+            {
+                // srcMat局部纯色将产生无穷大
+                return default;
+            }
+            
             if (matchMode is TemplateMatchModes.SqDiff or TemplateMatchModes.SqDiffNormed)
             {
                 if (minValue <= 1 - threshold)
                 {
-                    double confidence = 1 - minValue / 1 - (1 - threshold);
-                    return (minLoc, confidence);
+                    return (minLoc, 1 - minValue);
                 }
             }
             else
