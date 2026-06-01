@@ -34,19 +34,19 @@ public class AutoPickTrigger : ITaskTrigger
         _currentPrimaryItem = IdentifySlotItem(content, _assets.CurrentPrimaryItemTemplates);
         _currentSecondaryItem = IdentifySlotItem(content, _assets.CurrentSecondaryItemTemplates);
         
-        _logger.LogDebug($"主物品槽:{_currentPrimaryItem}, 副物品槽:{_currentSecondaryItem}, 主可拾取:{_pickPrimaryItem}, 副可拾取:{_pickSecondaryItem}");
+        // _logger.LogDebug($"主物品槽:{_currentPrimaryItem}, 副物品槽:{_currentSecondaryItem}, 主可拾取:{_pickPrimaryItem}, 副可拾取:{_pickSecondaryItem}");
 
         if (_pickPrimaryItem != null && _currentPrimaryItem == null)
         {
             // 拾取到主物品槽
-            _logger.LogInformation("拾取到主物品槽");
-            // Simulation.SendInput.Keyboard.KeyPress(_autoPickAssets.PickToPrimarySlotVk);
+            _logger.LogInformation($"拾取{_pickPrimaryItem}到主物品槽");
+            Simulation.SendInput.Keyboard.KeyPress(_assets.PickToPrimarySlotVk);
         }
         else if (_pickSecondaryItem != null && _currentSecondaryItem == null)
         {
             // 拾取到副物品槽
-            _logger.LogInformation("拾取到副物品槽");
-            // Simulation.SendInput.Keyboard.KeyPress(_autoPickAssets.PickToSecondarySlotVk);
+            _logger.LogInformation($"拾取{_pickSecondaryItem}到副物品槽");
+            Simulation.SendInput.Keyboard.KeyPress(_assets.PickToSecondarySlotVk);
         }
         
     }

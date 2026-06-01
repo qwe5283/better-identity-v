@@ -41,9 +41,9 @@ public class RecognitionObject
     public double BlurSigma { get; set; } = 0;
 
     /// <summary>
-    ///     模板匹配阈值。可选，默认 0.75 。
+    ///     模板匹配阈值。可选，默认 0.8 。
     /// </summary>
-    public double Threshold { get; set; } = 0.75;
+    public double Threshold { get; set; } = 0.8;
 
     /// <summary>
     ///     是否使用 3 通道匹配。可选，默认 false 。

@@ -3,6 +3,7 @@
 // 可消耗道具
 public enum PickableItemType
 {
+    // 1v4道具
     Controller, // 遥控器
     Decoy, // 魔术棒
     ElbowPads, // 护腕
@@ -16,6 +17,12 @@ public enum PickableItemType
     Dovlin, // 多夫林
     Syringe, // 镇静剂
     Toolkit, // 工具箱
+    // 2v8道具
+    SmokeBottle, // 烟雾瓶
+    BlackMud, // 黑色污泥
+    Crowbar, // 撬棍
+    ColdsnapFlask, // 速冻瓶
+    BogusBag, // 伯格包
 }
 
 // 独占道具
