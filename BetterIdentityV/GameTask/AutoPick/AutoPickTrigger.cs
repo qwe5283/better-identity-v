@@ -21,6 +21,9 @@ public class AutoPickTrigger : ITaskTrigger
 
     private PickableItemType? _pickPrimaryItem, _pickSecondaryItem, _currentPrimaryItem, _currentSecondaryItem;
 
+    private DateTime _lastPickToPrimarySlotTime, _lastPickToSecondarySlotTime;
+    private readonly TimeSpan _coolDownInterval = TimeSpan.FromSeconds(3);
+
     public void Init()
     {
         var config = TaskContext.Instance().Config.AutoPickConfig;
@@ -36,17 +39,21 @@ public class AutoPickTrigger : ITaskTrigger
         
         // _logger.LogDebug($"主物品槽:{_currentPrimaryItem}, 副物品槽:{_currentSecondaryItem}, 主可拾取:{_pickPrimaryItem}, 副可拾取:{_pickSecondaryItem}");
 
-        if (_pickPrimaryItem != null && _currentPrimaryItem == null)
+        DateTime now = DateTime.UtcNow;
+        
+        if (_pickPrimaryItem != null && _currentPrimaryItem == null && now - _lastPickToPrimarySlotTime > _coolDownInterval)
         {
             // 拾取到主物品槽
             _logger.LogInformation($"拾取{_pickPrimaryItem}到主物品槽");
-            Simulation.SendInput.Keyboard.KeyPress(_assets.PickToPrimarySlotVk);
+            // Simulation.SendInput.Keyboard.KeyPress(_assets.PickToPrimarySlotVk);
+            _lastPickToPrimarySlotTime = now;
         }
-        else if (_pickSecondaryItem != null && _currentSecondaryItem == null)
+        else if (_pickSecondaryItem != null && _currentSecondaryItem == null && now - _lastPickToSecondarySlotTime > _coolDownInterval)
         {
             // 拾取到副物品槽
             _logger.LogInformation($"拾取{_pickSecondaryItem}到副物品槽");
-            Simulation.SendInput.Keyboard.KeyPress(_assets.PickToSecondarySlotVk);
+            // Simulation.SendInput.Keyboard.KeyPress(_assets.PickToSecondarySlotVk);
+            _lastPickToSecondarySlotTime = now;
         }
         
     }
