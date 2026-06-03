@@ -27,6 +27,7 @@ public partial class MaskWindowViewModel : ObservableRecipient
         if (Config != null)
         {
             StatusList.Add(new StatusItem("\u26a1 校准", Config.AutoQTEConfig));
+            StatusList.Add(new StatusItem("\uf256 拾取", Config.AutoPickConfig));
         }
     }
     

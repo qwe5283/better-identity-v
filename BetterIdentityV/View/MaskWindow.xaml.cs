@@ -1,13 +1,16 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
 using BetterIdentityV.Core.Config;
+using BetterIdentityV.Core.Recognition.OpenCv;
 using BetterIdentityV.GameTask;
 using BetterIdentityV.Helpers;
 using BetterIdentityV.Helpers.DpiAwareness;
+using BetterIdentityV.View.Drawable;
 using Microsoft.Extensions.Logging;
 using Serilog.Sinks.RichTextBox.Abstraction;
 using Vanara.PInvoke;
@@ -35,6 +38,8 @@ public partial class MaskWindow : Window
     {
         // 设置字体
         _typeface = new FontFamily("Microsoft Yahei UI").GetTypefaces().First();
+        
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(MaskWindow), new FrameworkPropertyMetadata(typeof(MaskWindow)));
     }
 
     public static MaskWindow Instance()
@@ -135,7 +140,63 @@ public partial class MaskWindow : Window
     {
         Dispatcher.Invoke(action);
     }
-    
+
+    protected override void OnRender(DrawingContext drawingContext)
+    {
+        try
+        {
+            var count = VisionContext.Instance().DrawContent.RectList.Count + VisionContext.Instance().DrawContent.LineList.Count + VisionContext.Instance().DrawContent.TextList.Count;
+            if (count == 0)
+                return;
+            
+            // 先有上方判断的原因是，有可能Render的时候，配置还未初始化
+            // if (!TaskContext.Instance().Config.MaskWindowConfig.DisplayRecognitionResultsOnMask)
+            //     return;
+            
+            foreach (var kv in VisionContext.Instance().DrawContent.RectList)
+            {
+                foreach (var drawable in kv.Value)
+                {
+                    if (!drawable.IsEmpty)
+                    {
+                        drawingContext.DrawRectangle(Brushes.Transparent,
+                            new Pen(new SolidColorBrush(drawable.Pen.Color.ToWindowsColor()), drawable.Pen.Width),
+                            drawable.Rect);
+                    }
+                }
+            }
+            
+            foreach (var kv in VisionContext.Instance().DrawContent.LineList)
+            {
+                foreach (var drawable in kv.Value)
+                {
+                    drawingContext.DrawLine(new Pen(new SolidColorBrush(drawable.Pen.Color.ToWindowsColor()), drawable.Pen.Width), drawable.P1, drawable.P2);
+                }
+            }
+
+            foreach (var kv in VisionContext.Instance().DrawContent.TextList)
+            {
+                foreach (var drawable in kv.Value)
+                {
+                    if (!drawable.IsEmpty)
+                    {
+                        drawingContext.DrawText(new FormattedText(drawable.Text,
+                            CultureInfo.GetCultureInfo("zh-cn"),
+                            FlowDirection.LeftToRight,
+                            new Typeface(_typeface.FontFamily, _typeface.Style, FontWeights.Bold, _typeface.Stretch),
+                            12, Brushes.Red, 1), drawable.Point);
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+        }
+
+        base.OnRender(drawingContext);
+    }
+
     public RichTextBox LogBox => LogTextBox;
 }
 
