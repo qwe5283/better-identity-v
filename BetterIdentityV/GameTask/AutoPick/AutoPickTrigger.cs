@@ -19,16 +19,17 @@ public class AutoPickTrigger : ITaskTrigger
     public bool IsExclusive => false;
     
     private readonly AutoPickAssets _assets = AutoPickAssets.Instance;
+    private TimeSpan _coolDownInterval = TimeSpan.FromSeconds(3);
 
     private PickableItemType? _pickPrimaryItem, _pickSecondaryItem, _currentPrimaryItem, _currentSecondaryItem;
 
     private DateTime _lastPickToPrimarySlotTime, _lastPickToSecondarySlotTime;
-    private readonly TimeSpan _coolDownInterval = TimeSpan.FromSeconds(3);
 
     public void Init()
     {
         var config = TaskContext.Instance().Config.AutoPickConfig;
         IsEnabled = config.Enabled;
+        _coolDownInterval = TimeSpan.FromSeconds(config.CooldownTime);
     }
 
     public void OnCapture(CaptureContent content)

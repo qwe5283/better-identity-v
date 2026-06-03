@@ -40,14 +40,19 @@
             <ui:ToggleSwitch Margin="0,0,40,0" IsChecked="{Binding Config.AutoQTEConfig.Enabled, Mode=TwoWay}" />
         </ui:CardControl>
         <!-- 自动拾取 -->
-        <ui:CardControl Margin="0,0,0,12"
-                        Icon="{ui:SymbolIcon HandWave24}">
-            <ui:CardControl.Header>
+        <ui:CardExpander Margin="0,0,0,12" 
+                         ContentPadding="0" 
+                         Icon="{ui:SymbolIcon HandWave24}">
+            <ui:CardExpander.Header>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                     <ui:TextBlock Grid.Row="0"
                                   Grid.Column="0"
                                   FontTypography="Body"
@@ -56,11 +61,45 @@
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="道具栏为空且附近有可拾取道具时，自动按下拾取"
+                                  Text="道具栏为空且附近有可拾取道具时，自动按下拾取到道具栏，联合狩猎可用"
                                   TextWrapping="Wrap" />
+                    <ui:ToggleSwitch Grid.Row="0"
+                                     Grid.RowSpan="2"
+                                     Grid.Column="1"
+                                     Margin="0,0,24,0"
+                                     IsChecked="{Binding Config.AutoPickConfig.Enabled, Mode=TwoWay}" />
                 </Grid>
-            </ui:CardControl.Header>
-            <ui:ToggleSwitch Margin="0,0,40,0" IsChecked="{Binding Config.AutoPickConfig.Enabled, Mode=TwoWay}" />
-        </ui:CardControl>
+            </ui:CardExpander.Header>
+            <StackPanel>
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="最小触发间隔（秒）"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="自动拾取按键触发最小时间间隔，防止连续触发"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBox Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                MinWidth="90"
+                                VerticalAlignment="Center"
+                                Margin="0,0,24,0"
+                                Text="{Binding Config.AutoPickConfig.CooldownTime, Mode=TwoWay}" />
+                </Grid>
+            </StackPanel>
+        </ui:CardExpander>
+        
     </StackPanel>
 </Page>
