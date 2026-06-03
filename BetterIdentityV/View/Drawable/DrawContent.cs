@@ -19,11 +19,11 @@ public class DrawContent
     public ConcurrentDictionary<string, List<TextDrawable>> TextList { get; set; } = new();
 
     /// <summary>
-    /// 在遮罩窗口上绘制的文本
+    /// 在遮罩窗口上绘制的线段
     /// </summary>
     public ConcurrentDictionary<string, List<LineDrawable>> LineList { get; set; } = new();
     
-    public virtual void PutRect(string key, RectDrawable newRect)
+    public virtual void PutRect(string key, RectDrawable newRect, double? confidence = null)
     {
         if (RectList.TryGetValue(key, out var prevRect))
         {
@@ -34,6 +34,18 @@ public class DrawContent
         }
 
         RectList[key] = [newRect];
+
+        if (confidence != null)
+        {
+            var textPoint = new System.Windows.Point(newRect.Rect.X, newRect.Rect.Y - 16);
+            TextList[key + "_confidence"] = [new TextDrawable(
+                $"{confidence:F2} {key}", textPoint)];
+        }
+        else
+        {
+            TextList.TryRemove(key + "_confidence", out _);
+        }
+        
         MaskWindow.Instance().Refresh();
     }
     
@@ -42,6 +54,7 @@ public class DrawContent
         if (RectList.TryGetValue(key, out _))
         {
             RectList.TryRemove(key, out _);
+            TextList.TryRemove(key + "_confidence", out _);
             MaskWindow.Instance().Refresh();
         }
     }

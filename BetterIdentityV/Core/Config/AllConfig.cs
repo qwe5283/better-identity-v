@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using BetterIdentityV.GameCapture;
 using BetterIdentityV.GameTask;
+using BetterIdentityV.GameTask.AutoPick;
 using BetterIdentityV.GameTask.AutoQTE;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -36,6 +37,11 @@ public partial class AllConfig : ObservableObject
     /// </summary>
     public AutoQTEConfig AutoQTEConfig { get; set; } = new();
     
+    /// <summary>
+    /// 自动拾取配置
+    /// </summary>
+    public AutoPickConfig AutoPickConfig { get; set; } = new();
+    
     [JsonIgnore]
     public Action? OnAnyChangedAction { get; set; }
     
@@ -44,6 +50,7 @@ public partial class AllConfig : ObservableObject
         PropertyChanged += OnAnyPropertyChanged;
         CommonConfig.PropertyChanged += OnAnyPropertyChanged;
         AutoQTEConfig.PropertyChanged += OnAnyPropertyChanged;
+        AutoPickConfig.PropertyChanged += OnAnyPropertyChanged;
     }
     
     public void OnAnyPropertyChanged(object? sender, EventArgs args)
