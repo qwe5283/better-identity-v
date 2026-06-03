@@ -1,4 +1,5 @@
-﻿using BetterIdentityV.Core.Recognition;
+﻿using System.Diagnostics;
+using BetterIdentityV.Core.Recognition;
 using BetterIdentityV.Core.Simulator;
 using BetterIdentityV.GameTask.AutoPick.Assets;
 using BetterIdentityV.GameTask.Model.Area;
@@ -32,12 +33,15 @@ public class AutoPickTrigger : ITaskTrigger
 
     public void OnCapture(CaptureContent content)
     {
+        SpeedTimer speedTimer = new SpeedTimer();
+        
         _pickPrimaryItem = IdentifySlotItem(content, _assets.PickPrimarySlotItemTemplates);
         _pickSecondaryItem = IdentifySlotItem(content, _assets.PickSecondarySlotItemTemplates);
         _currentPrimaryItem = IdentifySlotItem(content, _assets.CurrentPrimaryItemTemplates);
         _currentSecondaryItem = IdentifySlotItem(content, _assets.CurrentSecondaryItemTemplates);
         
-        // _logger.LogDebug($"主物品槽:{_currentPrimaryItem}, 副物品槽:{_currentSecondaryItem}, 主可拾取:{_pickPrimaryItem}, 副可拾取:{_pickSecondaryItem}");
+        speedTimer.Record("识别完成");
+        Debug.WriteLine($"主物品槽:{_currentPrimaryItem}, 副物品槽:{_currentSecondaryItem}, 主可拾取:{_pickPrimaryItem}, 副可拾取:{_pickSecondaryItem}");
 
         DateTime now = DateTime.UtcNow;
         
@@ -45,16 +49,18 @@ public class AutoPickTrigger : ITaskTrigger
         {
             // 拾取到主物品槽
             _logger.LogInformation($"拾取{_pickPrimaryItem}到主物品槽");
-            // Simulation.SendInput.Keyboard.KeyPress(_assets.PickToPrimarySlotVk);
+            Simulation.SendInput.Keyboard.KeyPress(_assets.PickToPrimarySlotVk);
             _lastPickToPrimarySlotTime = now;
         }
         else if (_pickSecondaryItem != null && _currentSecondaryItem == null && now - _lastPickToSecondarySlotTime > _coolDownInterval)
         {
             // 拾取到副物品槽
             _logger.LogInformation($"拾取{_pickSecondaryItem}到副物品槽");
-            // Simulation.SendInput.Keyboard.KeyPress(_assets.PickToSecondarySlotVk);
+            Simulation.SendInput.Keyboard.KeyPress(_assets.PickToSecondarySlotVk);
             _lastPickToSecondarySlotTime = now;
         }
+        
+        speedTimer.DebugPrint();
         
     }
     

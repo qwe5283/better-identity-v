@@ -49,6 +49,7 @@ public class AutoPickAssets : BaseAssets<AutoPickAssets>
             [PickableItemType.SmokeBottle] = CreateItemRo("(主拾)烟雾瓶", "PickSlot_SmokeBottle.png", pickablePrimaryItemRect),
             [PickableItemType.BlackMud] = CreateItemRo("(主拾)污泥", "PickSlot_BlackMud.png", pickablePrimaryItemRect),
             [PickableItemType.ColdsnapFlask] = CreateItemRo("(主拾)速冻瓶", "PickSlot_ColdsnapFlask.png", pickablePrimaryItemRect),
+            [PickableItemType.Crowbar] = CreateItemRo("(主拾)撬棍", "PickSlot_Crowbar.png", pickablePrimaryItemRect),
             [PickableItemType.BogusBag] = CreateItemRo("(主拾)博格包", "PickSlot_BogusBag.png", pickablePrimaryItemRect),
         };
         PickSecondarySlotItemTemplates = new Dictionary<PickableItemType, RecognitionObject>
@@ -69,6 +70,7 @@ public class AutoPickAssets : BaseAssets<AutoPickAssets>
             [PickableItemType.SmokeBottle] = CreateItemRo("(副拾)烟雾瓶", "PickSlot_SmokeBottle.png", pickableSecondaryItemRect),
             [PickableItemType.BlackMud] = CreateItemRo("(副拾)污泥", "PickSlot_BlackMud.png", pickableSecondaryItemRect),
             [PickableItemType.ColdsnapFlask] = CreateItemRo("(副拾)速冻瓶", "PickSlot_ColdsnapFlask.png", pickableSecondaryItemRect),
+            [PickableItemType.Crowbar] = CreateItemRo("(副拾)撬棍", "PickSlot_Crowbar.png", pickableSecondaryItemRect),
             [PickableItemType.BogusBag] = CreateItemRo("(副拾)博格包", "PickSlot_BogusBag.png", pickableSecondaryItemRect),
         };
         
@@ -77,13 +79,21 @@ public class AutoPickAssets : BaseAssets<AutoPickAssets>
         {
             [PickableItemType.Controller] = CreateItemRo("(主物)遥控器", "ItemSlot_Controller.png", currentPrimaryItemRect),
             [PickableItemType.Decoy] = CreateItemRo("(主物)魔术棒", "ItemSlot_Decoy.png", currentPrimaryItemRect),
+            [PickableItemType.ElbowPads] = CreateItemRo("(主物)护肘", "ItemSlot_ElbowPads.png", currentPrimaryItemRect),
+            [PickableItemType.ElbowPadsActivated] = CreateItemRo("(主物)护肘_激活", "ItemSlot_ElbowPads_Activated.png", currentPrimaryItemRect),
             [PickableItemType.Euphoria] = CreateItemRo("(主物)香水", "ItemSlot_Euphoria.png", currentPrimaryItemRect),
-            [PickableItemType.GulliverTravels] = CreateItemRo("(主物)游记", "ItemSlot_GulliverTravels.png", currentPrimaryItemRect),
+            [PickableItemType.FlareGun] = CreateItemRo("(主物)信号枪", "ItemSlot_FlareGun.png", currentPrimaryItemRect),
             [PickableItemType.Flashlight] = CreateItemRo("(主物)手电筒", "ItemSlot_Flashlight.png", currentPrimaryItemRect),
+            [PickableItemType.GulliverTravels] = CreateItemRo("(主物)游记", "ItemSlot_GulliverTravels.png", currentPrimaryItemRect),
+            [PickableItemType.Map] = CreateItemRo("(主物)地图", "ItemSlot_Map.png", currentPrimaryItemRect),
             [PickableItemType.PoseidonWatch] = CreateItemRo("(主物)怀表", "ItemSlot_PoseidonWatch.png", currentPrimaryItemRect),
+            [PickableItemType.PoseidonWatchActivated] = CreateItemRo("(主物)怀表_激活", "ItemSlot_PoseidonWatch_Activated.png", currentPrimaryItemRect),
             [PickableItemType.RugbyBall] = CreateItemRo("(主物)橄榄球", "ItemSlot_RugbyBall.png", currentPrimaryItemRect),
+            [PickableItemType.Dovlin] = CreateItemRo("(主物)多夫林", "ItemSlot_Dovlin.png", currentPrimaryItemRect),
             [PickableItemType.Syringe] = CreateItemRo("(主物)镇静剂", "ItemSlot_Syringe.png", currentPrimaryItemRect),
+            [PickableItemType.Toolkit] = CreateItemRo("(主物)工具箱", "ItemSlot_Toolkit.png", currentPrimaryItemRect),
             [PickableItemType.SmokeBottle] = CreateItemRo("(主物)烟雾瓶", "ItemSlot_SmokeBottle.png", currentPrimaryItemRect),
+            [PickableItemType.BlackMud] = CreateItemRo("(主物)污泥", "ItemSlot_BlackMud.png", currentPrimaryItemRect),
             [PickableItemType.ColdsnapFlask] = CreateItemRo("(主物)速冻瓶", "ItemSlot_ColdsnapFlask.png", currentPrimaryItemRect),
             [PickableItemType.BogusBag] = CreateItemRo("(主物)博格包", "ItemSlot_BogusBag.png", currentPrimaryItemRect),
         };
@@ -91,13 +101,21 @@ public class AutoPickAssets : BaseAssets<AutoPickAssets>
         {
             [PickableItemType.Controller] = CreateItemRo("(副物)遥控器", "ItemSlot_Controller.png", currentSecondaryItemRect),
             [PickableItemType.Decoy] = CreateItemRo("(副物)魔术棒", "ItemSlot_Decoy.png", currentSecondaryItemRect),
+            [PickableItemType.ElbowPads] = CreateItemRo("(副物)护肘", "ItemSlot_ElbowPads.png", currentSecondaryItemRect),
+            [PickableItemType.ElbowPadsActivated] = CreateItemRo("(副物)护肘_激活", "ItemSlot_ElbowPads_Activated.png", currentSecondaryItemRect),
             [PickableItemType.Euphoria] = CreateItemRo("(副物)香水", "ItemSlot_Euphoria.png", currentSecondaryItemRect),
-            [PickableItemType.GulliverTravels] = CreateItemRo("(副物)游记", "ItemSlot_GulliverTravels.png", currentSecondaryItemRect),
+            [PickableItemType.FlareGun] = CreateItemRo("(副物)信号枪", "ItemSlot_FlareGun.png", currentSecondaryItemRect),
             [PickableItemType.Flashlight] = CreateItemRo("(副物)手电筒", "ItemSlot_Flashlight.png", currentSecondaryItemRect),
+            [PickableItemType.GulliverTravels] = CreateItemRo("(副物)游记", "ItemSlot_GulliverTravels.png", currentSecondaryItemRect),
+            [PickableItemType.Map] = CreateItemRo("(副物)地图", "ItemSlot_Map.png", currentSecondaryItemRect),
             [PickableItemType.PoseidonWatch] = CreateItemRo("(副物)怀表", "ItemSlot_PoseidonWatch.png", currentSecondaryItemRect),
+            [PickableItemType.PoseidonWatchActivated] = CreateItemRo("(副物)怀表_激活", "ItemSlot_PoseidonWatch_Activated.png", currentSecondaryItemRect),
             [PickableItemType.RugbyBall] = CreateItemRo("(副物)橄榄球", "ItemSlot_RugbyBall.png", currentSecondaryItemRect),
+            [PickableItemType.Dovlin] = CreateItemRo("(副物)多夫林", "ItemSlot_Dovlin.png", currentSecondaryItemRect),
             [PickableItemType.Syringe] = CreateItemRo("(副物)镇静剂", "ItemSlot_Syringe.png", currentSecondaryItemRect),
+            [PickableItemType.Toolkit] = CreateItemRo("(副物)工具箱", "ItemSlot_Toolkit.png", currentSecondaryItemRect),
             [PickableItemType.SmokeBottle] = CreateItemRo("(副物)烟雾瓶", "ItemSlot_SmokeBottle.png", currentSecondaryItemRect),
+            [PickableItemType.BlackMud] = CreateItemRo("(副物)污泥", "ItemSlot_BlackMud.png", currentSecondaryItemRect),
             [PickableItemType.ColdsnapFlask] = CreateItemRo("(副物)速冻瓶", "ItemSlot_ColdsnapFlask.png", currentSecondaryItemRect),
             [PickableItemType.BogusBag] = CreateItemRo("(副物)博格包", "ItemSlot_BogusBag.png", currentSecondaryItemRect),
         };
