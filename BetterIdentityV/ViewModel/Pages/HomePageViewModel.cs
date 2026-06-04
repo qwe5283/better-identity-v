@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Windows;
 using System.Windows.Interop;
 using BetterIdentityV.Core.Config;
 using BetterIdentityV.Helpers;
@@ -9,7 +10,7 @@ using BetterIdentityV.Service.Interface;
 using BetterIdentityV.View;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Wpf.Ui.Violeta.Controls;
+using MessageBox = Wpf.Ui.Violeta.Controls.MessageBox;
 
 namespace BetterIdentityV.ViewModel.Pages;
 
@@ -67,24 +68,33 @@ public partial class HomePageViewModel : ViewModel
         Debug.WriteLine($"游戏启动句柄{hWnd}");
         lock (this)
         {
-            if (Config.TriggerInterval <= 0)
+            try
             {
-                MessageBox.Error("触发器触发频率必须大于0");
-                return;
-            }
+                if (Config.TriggerInterval <= 0)
+                {
+                    MessageBox.Error("触发器触发频率必须大于0");
+                    return;
+                }
 
-            if (!TaskDispatcherEnabled)
+                if (!TaskDispatcherEnabled)
+                {
+                    _hWnd = hWnd;
+                    _taskDispatcher.Start(hWnd, GetCaptureMode(), Config.TriggerInterval);
+                    _taskDispatcher.UiTaskStopTickEvent -= OnUiTaskStopTick;
+                    _taskDispatcher.UiTaskStartTickEvent -= OnUiTaskStartTick;
+                    _taskDispatcher.UiTaskStopTickEvent += OnUiTaskStopTick;
+                    _taskDispatcher.UiTaskStartTickEvent += OnUiTaskStartTick;
+                    _maskWindow ??= new MaskWindow(); // 延迟初始化
+                    _maskWindow.Show();
+                    MaskWindow.Instance().RefreshPosition();
+                    TaskDispatcherEnabled = true;
+                }
+            }
+            catch (ArgumentException e)
             {
-                _hWnd = hWnd;
-                _taskDispatcher.Start(hWnd, GetCaptureMode(), Config.TriggerInterval);
-                _taskDispatcher.UiTaskStopTickEvent -= OnUiTaskStopTick;
-                _taskDispatcher.UiTaskStartTickEvent -= OnUiTaskStartTick;
-                _taskDispatcher.UiTaskStopTickEvent += OnUiTaskStopTick;
-                _taskDispatcher.UiTaskStartTickEvent += OnUiTaskStartTick;
-                _maskWindow ??= new MaskWindow(); // 延迟初始化
-                _maskWindow.Show();
-                MaskWindow.Instance().RefreshPosition();
-                TaskDispatcherEnabled = true;
+                // 捕获分辨率不得小于800x600异常
+                Application.Current.MainWindow?.Activate();
+                MessageBox.Error(e.Message);
             }
         }
     }
