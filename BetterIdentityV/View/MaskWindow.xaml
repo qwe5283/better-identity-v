@@ -87,7 +87,7 @@
                                  Foreground="LightGray"
                                  IsHitTestVisible="False"
                                  VerticalScrollBarVisibility="Hidden"
-                                 Visibility="Visible">
+                                 Visibility="{Binding Config.MaskWindowConfig.ShowLogBox, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <d:FlowDocument FontFamily="{Binding FontFamily, ElementName=LogTextBox}" FontSize="{Binding FontSize, ElementName=LogTextBox}">
                             <Paragraph>
                                 <Run>[00:00:00 INF] 更好的IDV</Run>
@@ -110,7 +110,7 @@
                         <DropShadowEffect Opacity="0.4" BlurRadius="4" ShadowDepth="0" Color="LightGray" />
                     </ContentControl.Effect>
                     <ui:ListView ItemsSource="{Binding StatusList}"
-                                 Visibility="Visible"
+                                 Visibility="{Binding Config.MaskWindowConfig.ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}"
                                  d:ItemsSource="{d:SampleData}">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
@@ -153,6 +153,7 @@
             </Grid>
             <!-- 中心线辅瞄 -->
             <Rectangle Grid.Row="0" Grid.Column="4"
+                       Visibility="{Binding Config.MaskWindowConfig.ShowAimLine, Converter={StaticResource BooleanToVisibilityConverter}}"
                        Fill="DarkRed"
                        Opacity="0.2"
                        IsHitTestVisible="False"/>

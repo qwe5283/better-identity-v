@@ -48,6 +48,7 @@ public partial class AllConfig : ObservableObject
     public void InitEvent()
     {
         PropertyChanged += OnAnyPropertyChanged;
+        MaskWindowConfig.PropertyChanged += OnAnyPropertyChanged;
         CommonConfig.PropertyChanged += OnAnyPropertyChanged;
         AutoQTEConfig.PropertyChanged += OnAnyPropertyChanged;
         AutoPickConfig.PropertyChanged += OnAnyPropertyChanged;

@@ -1,10 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using BetterIdentityV.Core.Config;
+using BetterIdentityV.Helpers;
 using BetterIdentityV.Model;
 using BetterIdentityV.Service.Interface;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace BetterIdentityV.ViewModel;
 
@@ -19,7 +22,13 @@ public partial class MaskWindowViewModel : ObservableRecipient
     public MaskWindowViewModel()
     {
         //订阅配置更改消息，重新应用配置
-        
+        WeakReferenceMessenger.Default.Register<PropertyChangedMessage<object>>(this, (sender, msg) =>
+        {
+            if (msg.PropertyName == "RefreshSettings")
+            {
+                UIDispatcherHelper.Invoke(RefreshSettings);
+            }
+        });
     }
     
     private void InitializeStatusList()

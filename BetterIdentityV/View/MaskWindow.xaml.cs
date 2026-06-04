@@ -150,8 +150,8 @@ public partial class MaskWindow : Window
                 return;
             
             // 先有上方判断的原因是，有可能Render的时候，配置还未初始化
-            // if (!TaskContext.Instance().Config.MaskWindowConfig.DisplayRecognitionResultsOnMask)
-            //     return;
+            if (!TaskContext.Instance().Config.MaskWindowConfig.DisplayRecognitionResultsOnMask)
+                return;
             
             foreach (var kv in VisionContext.Instance().DrawContent.RectList)
             {
