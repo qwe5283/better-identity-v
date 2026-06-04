@@ -7,7 +7,7 @@
     <Application.Resources>
          <ResourceDictionary>
              <ResourceDictionary.MergedDictionaries>
-                 <ui:ThemesDictionary Theme="Light" />
+                 <ui:ThemesDictionary Theme="Dark" />
                  <ui:ControlsDictionary />
                  <vio:ControlsDictionary />
                  <ResourceDictionary Source="/View/Controls/WpfUi/FaFontIconStyle.xaml" />
