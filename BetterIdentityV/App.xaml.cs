@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Windows;
+using System.Windows.Threading;
 using BetterIdentityV.GameTask;
 using BetterIdentityV.Service;
 using BetterIdentityV.Service.Interface;
@@ -14,6 +15,7 @@ using Serilog.Events;
 using Serilog.Sinks.RichTextBox.Abstraction;
 using Wpf.Ui;
 using Wpf.Ui.DependencyInjection;
+using Wpf.Ui.Violeta.Controls;
 
 namespace BetterIdentityV;
 
@@ -108,6 +110,77 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        RegisterEvents();
         await _host.StartAsync(); //启动主机，触发托管服务启动流程
+    }
+    
+    private void RegisterEvents()
+    {
+        //Task线程内未捕获异常处理事件
+        TaskScheduler.UnobservedTaskException += TaskSchedulerUnobservedTaskException;
+        //UI线程未捕获异常处理事件（UI主线程）
+        this.DispatcherUnhandledException += AppDispatcherUnhandledException;
+        //非UI线程未捕获异常处理事件(例如自己创建的一个子线程)
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
+    }
+    
+    private static void TaskSchedulerUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        try
+        {
+            HandleException(e.Exception);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+        }
+        finally
+        {
+            e.SetObserved();
+        }
+    }
+    
+    private static void AppDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            HandleException(e.Exception);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+        }
+        finally
+        {
+            e.Handled = true;
+        }
+    }
+    
+    private static void CurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            if (e.ExceptionObject is Exception exception)
+            {
+                HandleException(exception);
+            }
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+        }
+    }
+    
+    private static void HandleException(Exception e)
+    {
+        if (e.InnerException != null)
+        {
+            e = e.InnerException;
+        }
+        
+        ExceptionReport.Show(e);
+
+        // log
+        GetLogger<App>().LogDebug(e, "UnHandle Exception");
     }
 }
