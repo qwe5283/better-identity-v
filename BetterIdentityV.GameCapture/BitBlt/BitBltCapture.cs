@@ -25,8 +25,7 @@ public class BitBltCapture : IGameCapture
     
     public void Start(IntPtr hWnd, Dictionary<string, object>? settings = null)
     {
-        if (settings == null || !settings.TryGetValue("autoFixWin11BitBlt", out var value)) return;
-        if (value is true)
+        if (settings != null && settings.TryGetValue("autoFixWin11BitBlt", out var value) && value is true)
         {
             BitBltRegistryHelper.SetDirectXUserGlobalSettings();
         }
