@@ -38,18 +38,18 @@
                     <ui:TextBlock Grid.Row="0"
                                   Grid.Column="0"
                                   FontTypography="Body"
-                                  Text="启用遮罩窗口"
+                                  Text="遮罩窗口"
                                   TextWrapping="Wrap" />
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="重启后生效"
+                                  Text="随截图器启动，遮罩窗口会覆盖在游戏画面上"
                                   TextWrapping="Wrap" />
-                    <ui:ToggleSwitch Grid.Row="0"
-                                     Grid.RowSpan="2"
-                                     Grid.Column="1"
-                                     Margin="0,0,24,0"
-                                     IsChecked="{Binding Config.MaskWindowConfig.MaskEnabled, Mode=TwoWay}"/>
+                    <!-- <ui:ToggleSwitch Grid.Row="0" -->
+                    <!--                  Grid.RowSpan="2" -->
+                    <!--                  Grid.Column="1" -->
+                    <!--                  Margin="0,0,24,0" -->
+                    <!--                  IsChecked="{Binding Config.MaskWindowConfig.MaskEnabled, Mode=TwoWay}"/> -->
 
                 </Grid>
             </ui:CardExpander.Header>
