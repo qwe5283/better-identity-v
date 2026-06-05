@@ -6,7 +6,7 @@
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  Title="关于"
-                 Width="400"
+                 Width="450"
                  Height="300"
                  Background="#202020"
                  ExtendsContentIntoTitleBar="True"
@@ -14,7 +14,7 @@
                  WindowBackdropType="None"
                  WindowStartupLocation="CenterOwner"
                  ResizeMode="NoResize"
-                 MinWidth="400" MaxWidth="400" MinHeight="300" MaxHeight="300"
+                 MinWidth="450" MaxWidth="450" MinHeight="300" MaxHeight="300"
                  mc:Ignorable="d">
     <Grid>
         <ui:Grid Margin="0,48,0,0" RowDefinitions="Auto,*,Auto">
