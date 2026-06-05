@@ -20,7 +20,7 @@
                           Text="遮罩上的游戏信息指示设置" />
             <!-- 辅助瞄准线 -->
             <ui:CardControl Margin="0,0,0,12"
-                            Icon="{ui:SymbolIcon Flash24}">
+                            Icon="{ui:SymbolIcon FlipHorizontal24}">
                 <ui:CardControl.Header>
                     <Grid>
                         <Grid.RowDefinitions>

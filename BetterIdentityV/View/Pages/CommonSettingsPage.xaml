@@ -154,7 +154,7 @@
         <ui:TextBlock Margin="0,0,0,8"
                       FontTypography="BodyStrong"
                       Text="帮助" />
-        
+        <!-- 版本更新 -->
         <ui:CardControl Margin="0,0,0,12" Icon="{ui:SymbolIcon ArrowDownload24}">
             <ui:CardControl.Header>
                 <Grid>
@@ -175,8 +175,32 @@
                 </Grid>
             </ui:CardControl.Header>
             <ui:Button Margin="0,0,36,0"
-                       Command="{Binding OpenAboutWindowCommand}"
+                       Command="{Binding CheckUpdateCommand}"
                        Content="检查更新" />
+        </ui:CardControl>
+        <!-- 关于 -->
+        <ui:CardControl Margin="0,0,0,12" Icon="{ui:SymbolIcon Info24}">
+            <ui:CardControl.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="关于 BetterIDV"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="查看项目、文档等信息"
+                                  TextWrapping="Wrap" />
+                </Grid>
+            </ui:CardControl.Header>
+            <ui:Button Margin="0,0,36,0"
+                       Command="{Binding OpenAboutWindowCommand}"
+                       Content="查看" />
         </ui:CardControl>
     </StackPanel>
 </Page>
