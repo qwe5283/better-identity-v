@@ -1,0 +1,45 @@
+﻿<Page x:Class="BetterIdentityV.View.Pages.IndicatorSettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:pages="clr-namespace:BetterIdentityV.ViewModel.Pages"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="IndicatorSettingsPage" 
+      d:DataContext="{d:DesignInstance Type=pages:IndicatorSettingsPageViewModel}"
+      d:DesignHeight="950"
+      d:DesignWidth="800"
+      ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+      ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      FontFamily="{StaticResource TextThemeFontFamily}"
+      mc:Ignorable="d">
+      
+      <StackPanel Margin="42,16,42,12">
+            <ui:TextBlock Margin="0,0,0,8"
+                          FontTypography="BodyStrong"
+                          Text="遮罩上的游戏信息指示设置" />
+            <!-- 辅助瞄准线 -->
+            <ui:CardControl Margin="0,0,0,12"
+                            Icon="{ui:SymbolIcon Flash24}">
+                <ui:CardControl.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <ui:TextBlock Grid.Row="0"
+                                      Grid.Column="0"
+                                      FontTypography="Body"
+                                      Text="辅助瞄准线"
+                                      TextWrapping="Wrap" />
+                        <ui:TextBlock Grid.Row="1"
+                                      Grid.Column="0"
+                                      Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                      Text="在屏幕中心竖向绘制一条辅助线，仅帮助建立屏幕中心感"
+                                      TextWrapping="Wrap" />
+                    </Grid>
+                </ui:CardControl.Header>
+                <ui:ToggleSwitch Margin="0,0,40,0" IsChecked="{Binding Config.MaskWindowConfig.ShowAimLine, Mode=TwoWay}" />
+            </ui:CardControl>
+      </StackPanel>
+</Page>

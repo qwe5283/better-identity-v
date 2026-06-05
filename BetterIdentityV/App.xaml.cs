@@ -72,6 +72,8 @@ public partial class App : Application
                 services.AddSingleton<CommonSettingsPageViewModel>();
                 services.AddSingleton<TriggerSettingsPage>();
                 services.AddSingleton<TriggerSettingsPageViewModel>();
+                services.AddSingleton<IndicatorSettingsPage>();
+                services.AddSingleton<IndicatorSettingsPageViewModel>();
                 
                 // My Services
                 services.AddSingleton<TaskTriggerDispatcher>();

@@ -7,7 +7,6 @@
       xmlns:pages="clr-namespace:BetterIdentityV.ViewModel.Pages"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       Title="HomePage"
-      xmlns:local="clr-namespace:BetterIdentityV.View.Pages"
       d:DataContext="{d:DesignInstance Type=pages:HomePageViewModel}"
       d:DesignHeight="850"
       d:DesignWidth="800"

@@ -79,6 +79,14 @@
                         <ui:SymbolIcon Symbol="Timer24" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
+                <!-- 信息指示页 -->
+                <ui:NavigationViewItem Content="信息指示"
+                                       NavigationCacheMode="Enabled"
+                                       TargetPageType="{x:Type pages:IndicatorSettingsPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Blur24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
             <!-- 底部项 -->
             <ui:NavigationView.FooterMenuItems>
