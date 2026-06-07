@@ -82,6 +82,7 @@
                                                  EnableCommand="{Binding StartTriggerCommand}"
                                                  EnableContent="启动"
                                                  EnableIcon="{ui:SymbolIcon Play24}"
+                                                 Foreground="White"
                                                  IsChecked="{Binding TaskDispatcherEnabled, Mode=OneWay}" />
                     </StackPanel>
                 </Grid>

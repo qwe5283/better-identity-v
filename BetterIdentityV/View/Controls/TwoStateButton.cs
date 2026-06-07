@@ -16,18 +16,10 @@ public class TwoStateButton : Button
         }
 
         Loaded += OnLoaded;
-        ApplicationThemeManager.Changed += OnThemeChanged;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        OnThemeChanged(ApplicationThemeManager.GetAppTheme(), Colors.Transparent);
-    }
-    
-    private void OnThemeChanged(ApplicationTheme currentTheme, Color systemAccent)
-    {
-        EnableBackground = currentTheme == ApplicationTheme.Dark ? Brushes.DarkGreen : Brushes.GreenYellow;
-        DisableBackground = currentTheme == ApplicationTheme.Dark ? Brushes.DarkRed : Brushes.OrangeRed;
         UpdateButton();
     }
     
@@ -72,12 +64,20 @@ public class TwoStateButton : Button
         set => SetValue(EnableCommandProperty, value);
     }
     
-    public static readonly DependencyProperty EnableBackgroundProperty = DependencyProperty.Register(nameof(EnableBackground), typeof(Brush), typeof(TwoStateButton), new PropertyMetadata(null));
+    public static readonly DependencyProperty EnableBackgroundProperty = DependencyProperty.Register(nameof(EnableBackground), typeof(Brush), typeof(TwoStateButton), new PropertyMetadata(Brushes.Green));
 
     public Brush EnableBackground
     {
         get => (Brush)GetValue(EnableBackgroundProperty);
         set => SetValue(EnableBackgroundProperty, value);
+    }
+    
+    public static readonly DependencyProperty EnableMouseOverBackgroundProperty = DependencyProperty.Register(nameof(EnableMouseOverBackground), typeof(Brush), typeof(TwoStateButton), new PropertyMetadata(Brushes.DarkGreen));
+
+    public Brush EnableMouseOverBackground
+    {
+        get => (Brush)GetValue(EnableMouseOverBackgroundProperty);
+        set => SetValue(EnableMouseOverBackgroundProperty, value);
     }
     
     private static readonly DependencyProperty DisableContentProperty = DependencyProperty.Register(nameof(DisableContent), typeof(object), typeof(TwoStateButton), new PropertyMetadata("停止"));
@@ -104,12 +104,20 @@ public class TwoStateButton : Button
         set => SetValue(DisableCommandProperty, value);
     }
     
-    public static readonly DependencyProperty DisableBackgroundProperty = DependencyProperty.Register(nameof(DisableBackground), typeof(Brush), typeof(TwoStateButton), new PropertyMetadata(null));
+    public static readonly DependencyProperty DisableBackgroundProperty = DependencyProperty.Register(nameof(DisableBackground), typeof(Brush), typeof(TwoStateButton), new PropertyMetadata(Brushes.DarkRed));
 
     public Brush DisableBackground
     {
         get => (Brush)GetValue(DisableBackgroundProperty);
         set => SetValue(DisableBackgroundProperty, value);
+    }
+    
+    public static readonly DependencyProperty DisableMouseOverBackgroundProperty = DependencyProperty.Register(nameof(DisableMouseOverBackground), typeof(Brush), typeof(TwoStateButton), new PropertyMetadata(Brushes.Red));
+
+    public Brush DisableMouseOverBackground
+    {
+        get => (Brush)GetValue(DisableMouseOverBackgroundProperty);
+        set => SetValue(DisableMouseOverBackgroundProperty, value);
     }
 
     
@@ -121,6 +129,7 @@ public class TwoStateButton : Button
             Content = DisableContent;
             Icon = DisableIcon;
             Background = DisableBackground;
+            MouseOverBackground = DisableMouseOverBackground;
         }
         else
         {
@@ -128,6 +137,7 @@ public class TwoStateButton : Button
             Content = EnableContent;
             Icon = EnableIcon;
             Background = EnableBackground;
+            MouseOverBackground = EnableMouseOverBackground;
         }
     }
 }

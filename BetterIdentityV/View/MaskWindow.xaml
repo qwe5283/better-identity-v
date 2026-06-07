@@ -139,11 +139,11 @@
                                         </Style>
                                     </StackPanel.Resources>
                                     <TextBlock FontFamily="{StaticResource FgiIconFontFamily}"
-                                               FontSize="12"
+                                               FontSize="14"
                                                Text="{Binding Name}">
                                         <TextBlock.Style>
                                             <Style TargetType="{x:Type TextBlock}">
-                                                <Setter Property="Foreground" Value="LightGray" />
+                                                <Setter Property="Foreground" Value="White" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsEnabled}" Value="True">
                                                         <Setter Property="Foreground" Value="LightGreen" />
@@ -164,83 +164,6 @@
                        Fill="DarkRed"
                        Opacity="0.2"
                        IsHitTestVisible="False"/>
-            <!-- 方位 -->
-            <Viewbox Grid.Column="2" Grid.Row="0" Opacity="0.6"
-                     HorizontalAlignment="Left" VerticalAlignment="Top">
-                <Grid Width="250" Height="250"
-                      Visibility="Visible">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.Effect>
-                        <DropShadowEffect Opacity="0.4" BlurRadius="8" ShadowDepth="0" />
-                    </Grid.Effect>
-                    <TextBlock Grid.Column="0"
-                               Grid.Row="2"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Margin="-24,0,0,0"
-                               FontSize="34"
-                               FontStretch="Medium"
-                               FontWeight="DemiBold"
-                               Foreground="White"
-                               Text="西" />
-                    <TextBlock Grid.Column="2"
-                               Grid.Row="4"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Margin="0,0,0,-24"
-                               FontSize="34"
-                               FontStretch="Medium"
-                               FontWeight="DemiBold"
-                               Foreground="White"
-                               Text="南" />
-                    <TextBlock Grid.Column="4"
-                               Grid.Row="2"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Margin="0,0,-24,0"
-                               FontSize="34"
-                               FontStretch="Medium"
-                               FontWeight="DemiBold"
-                               Foreground="White"
-                               Text="东" />
-                    <TextBlock Grid.Column="2"
-                               Grid.Row="0"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Margin="0,-24,0,0"
-                               FontSize="34"
-                               FontStretch="Medium"
-                               FontWeight="DemiBold"
-                               Foreground="White"
-                               Text="北" />
-                </Grid>
-            </Viewbox>
-            <!-- 展示FPS -->
-            <Border Margin="4,4,0,0"
-                    Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3"
-                    HorizontalAlignment="Left" VerticalAlignment="Top"
-                    Background="#00000000"
-                    CornerRadius="4"
-                    Opacity="0.6">
-                <TextBlock HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           Foreground="White"
-                           Text="fps" />
-            </Border>
         </Grid>
     </AdornerDecorator>
     

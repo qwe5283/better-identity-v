@@ -9,12 +9,6 @@ namespace BetterIdentityV.Core.Config;
 public partial class MaskWindowConfig : ObservableObject
 {
     /// <summary>
-    /// 方位提示是否启用
-    /// </summary>
-    [ObservableProperty]
-    private bool _directionsEnabled;
-
-    /// <summary>
     /// 是否在遮罩窗口上显示识别结果
     /// </summary>
     [ObservableProperty]
