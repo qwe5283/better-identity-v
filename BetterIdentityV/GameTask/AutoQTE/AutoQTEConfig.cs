@@ -19,5 +19,10 @@ public partial class AutoQTEConfig : ObservableObject
     /// 后台运行
     /// </summary>
     [ObservableProperty] private bool _runBackgroundEnabled = false;
+    
+    /// <summary>
+    /// 击打延迟(毫秒)
+    /// </summary>
+    [ObservableProperty] private double _systemDelayMs = 25.0;
 
 }
