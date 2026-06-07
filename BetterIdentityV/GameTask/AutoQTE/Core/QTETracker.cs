@@ -2,12 +2,13 @@
 
 public readonly record struct QTETrackResult(double? HitTimeSec, string Status)
 {
-    public bool ShouldHit => Status == QTETrackStatus.Hit;
+    public bool ShouldHit => Status is QTETrackStatus.PredictHit or QTETrackStatus.EmergencyHit;
 }
 
 public static class QTETrackStatus
 {
-    public const string Hit = "HIT";
+    public const string PredictHit = "PREDICT HIT";
+    public const string EmergencyHit = "EMERGENCY HIT";
 }
 
 /// <summary>
@@ -52,14 +53,17 @@ public class QTETracker
         }
 
         var red = redAngle.Value;
+        // 红色指针总是从左侧出现
         if (_redHistory.Count == 0 && red >= QTEAssets.NewRedMaxAngle)
         {
             return new QTETrackResult(null, "Red Not Left");
         }
 
+        // 以防截图帧率>游戏帧率，过滤重复采样数据
         if (_redHistory.Count == 0 || Math.Abs(red - _redHistory.Last().Angle) > 0.1)
         {
             _redHistory.Enqueue((red, currentTimeSec));
+            Console.WriteLine($"Add to redHistory with angle: {red}, time: {currentTimeSec:0.###}");
         }
 
         TrimByAge(_redHistory, currentTimeSec, QTEAssets.RedTimeWindowSec);
@@ -102,21 +106,21 @@ public class QTETracker
             {
                 var minHit = _hitTimeHistory.Min(i => i.HitTimeSec);
                 var maxHit = _hitTimeHistory.Max(i => i.HitTimeSec);
+                Console.WriteLine($"预测队列样本数: {_hitTimeHistory.Count}, 极差: {maxHit - minHit} sec");
                 if (maxHit - minHit <= _assets.HitTimeTolerance)
                 {
                     var finalHitTime = _hitTimeHistory.Average(i => i.HitTimeSec);
                     _lastHitTimeSec = currentTimeSec;
                     Clear(_hitTimeHistory);
-                    return new QTETrackResult(finalHitTime, QTETrackStatus.Hit);
+                    return new QTETrackResult(finalHitTime, QTETrackStatus.PredictHit);
                 }
             }
-
             return new QTETrackResult(hitTimeSec, $"Approach R:{red:F1} T:{targetAngle:F1}");
         }
 
         _lastHitTimeSec = currentTimeSec;
         Clear(_hitTimeHistory);
-        return new QTETrackResult(hitTimeSec, QTETrackStatus.Hit);
+        return new QTETrackResult(hitTimeSec, QTETrackStatus.EmergencyHit);
     }
 
     private void UpdateYellowLock(QTEAngleSpan? yellowSpan, double currentTimeSec)

@@ -68,6 +68,11 @@ public class TaskTriggerDispatcher : IDisposable
 
     public void Start(IntPtr hWnd, CaptureModes mode, int interval = 50)
     {
+        // 重新启动截图器前先停止旧触发器，避免自管线程类触发器残留。
+        _timer.Stop();
+        StopTriggers();
+        StopCapture();
+        
         // 初始化截图器
         GameCapture = GameCaptureFactory.Create(mode);
         // 激活窗口 保证后面能够正常获取窗口信息
@@ -99,7 +104,8 @@ public class TaskTriggerDispatcher : IDisposable
     public void Stop()
     {
         _timer.Stop();
-        GameCapture?.Stop();
+        StopTriggers();
+        StopCapture();
         _gameRect = RECT.Empty;
         _prevGameActive = false;
     }
@@ -290,5 +296,31 @@ public class TaskTriggerDispatcher : IDisposable
     private bool SizeIsZero(RECT rect)
     {
         return rect.Width == 0 || rect.Height == 0;
+    }
+    
+    private void StopTriggers()
+    {
+        if (_triggers == null) return;
+
+        lock (_triggerListLocker)
+        {
+            foreach (var trigger in _triggers)
+            {
+                trigger.IsEnabled = false;
+                if (trigger is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+
+            _triggers = null;
+        }
+    }
+    
+    private void StopCapture()
+    {
+        GameCapture?.Stop();
+        GameCapture?.Dispose();
+        GameCapture = null;
     }
 }

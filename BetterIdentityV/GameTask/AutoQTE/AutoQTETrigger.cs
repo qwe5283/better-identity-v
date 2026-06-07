@@ -1,12 +1,14 @@
 ﻿using System.Diagnostics;
 using BetterIdentityV.Core.Simulator;
+using BetterIdentityV.GameCapture;
 using BetterIdentityV.GameTask.AutoQTE.Core;
+using BetterIdentityV.Helpers;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 
 namespace BetterIdentityV.GameTask.AutoQTE;
 
-public class AutoQTETrigger : ITaskTrigger
+public class AutoQTETrigger : ITaskTrigger, IDisposable
 {
     private readonly ILogger<AutoQTETrigger> _logger = App.GetLogger<AutoQTETrigger>();
     private readonly object _loopLock = new();
@@ -26,9 +28,17 @@ public class AutoQTETrigger : ITaskTrigger
         get => _isEnabled;
         set
         {
+            if (_isEnabled == value)
+            {
+                if (_isEnabled)
+                    StartLoop();
+                return;
+            }
+
             _isEnabled = value;
-            // 停止后台线程
-            if (!_isEnabled)
+            if (_isEnabled)
+                StartLoop();
+            else
                 StopLoop();
         }
     }
@@ -42,10 +52,6 @@ public class AutoQTETrigger : ITaskTrigger
         var config = TaskContext.Instance().Config.AutoQTEConfig;
         _delayCompSec = Math.Max(0d, config.SystemDelayMs) / 1000d;
         IsEnabled = config.Enabled;
-        
-        // 启动后台线程
-        if (IsEnabled)
-            StartLoop();
     }
 
     public void OnCapture(CaptureContent content)
@@ -60,11 +66,14 @@ public class AutoQTETrigger : ITaskTrigger
             if (_workerThread?.IsAlive == true)
                 return;
 
+            _workerCts?.Dispose();
+            _workerCts = null;
             _detector?.Dispose();
             _detector = new QTEDetector(_assets);
             _tracker = new QTETracker(_assets);
+            var capture = TaskTriggerDispatcher.Instance().GameCapture;
             _workerCts = new CancellationTokenSource();
-            _workerThread = new Thread(() => WorkerLoop(_workerCts.Token))
+            _workerThread = new Thread(() => WorkerLoop(_workerCts.Token, capture))
             {
                 IsBackground = true,
                 Name = "AutoQTEWorker"
@@ -76,10 +85,15 @@ public class AutoQTETrigger : ITaskTrigger
     
     private void StopLoop()
     {
-        _logger.LogDebug("结束QTE线程");
         Thread? threadToJoin;
         lock (_loopLock)
         {
+            if (_workerThread is null && _workerCts is null && _detector is null && _tracker is null)
+            {
+                return;
+            }
+
+            _logger.LogDebug("结束QTE线程");
             _workerCts?.Cancel();
             threadToJoin = _workerThread;
         }
@@ -87,6 +101,11 @@ public class AutoQTETrigger : ITaskTrigger
         if (threadToJoin is not null && threadToJoin.IsAlive && threadToJoin != Thread.CurrentThread)
         {
             threadToJoin.Join(TimeSpan.FromSeconds(1));
+            if (threadToJoin.IsAlive)
+            {
+                _logger.LogWarning("QTE线程未能在超时时间内结束，将等待其响应取消信号");
+                return;
+            }
         }
 
         lock (_loopLock)
@@ -100,18 +119,22 @@ public class AutoQTETrigger : ITaskTrigger
         }
     }
 
+    public void Dispose()
+    {
+        StopLoop();
+        GC.SuppressFinalize(this);
+    }
+
     /// <summary>
     /// 处理主循环
     /// </summary>
-    private void WorkerLoop(CancellationToken token)
+    private void WorkerLoop(CancellationToken token, IGameCapture capture)
     {
         while (!token.IsCancellationRequested)
         {
+            SpeedTimer speedTimer = new SpeedTimer("QTE线程");
             try
             {
-                _logger.LogDebug("Loop");
-                var dispatcher = TaskTriggerDispatcher.Instance();
-                var capture = dispatcher.GameCapture;
                 if (capture is not { IsCapturing: true })
                 {
                     token.WaitHandle.WaitOne(50);
@@ -124,16 +147,22 @@ public class AutoQTETrigger : ITaskTrigger
                     token.WaitHandle.WaitOne(10);
                     continue;
                 }
-
-                using var frame1080p = NormalizeTo1080p(rawFrame);
-                var detection = _detector?.Process(frame1080p) ?? default;
+                
                 var currentTimeSec = GetTimestampSec();
+                speedTimer.Record("捕获");
+                using var frame1080p = NormalizeTo1080p(rawFrame);
+                speedTimer.Record("转1080P");
+                var detection = _detector?.Process(frame1080p) ?? default;
+                speedTimer.Record("提取指针角度和黄色范围");
                 var trackResult = _tracker?.Update(
                     detection.RedAngle,
                     detection.YellowSpan,
                     currentTimeSec,
                     _delayCompSec) ?? default;
-
+                
+                if (trackResult.Status == QTETrackStatus.EmergencyHit) 
+                    _logger.LogWarning("预测拟合校准时间模型失败");
+                
                 if (trackResult is { ShouldHit: true, HitTimeSec: not null })
                 {
                     ExecuteHitAt(trackResult.HitTimeSec.Value, token);
@@ -148,6 +177,7 @@ public class AutoQTETrigger : ITaskTrigger
                 _logger.LogError(ex, "自动QTE处理循环异常");
                 token.WaitHandle.WaitOne(100);
             }
+            speedTimer.DebugPrint();
         }
     }
     
