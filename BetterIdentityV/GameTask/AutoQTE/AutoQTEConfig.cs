@@ -11,7 +11,7 @@ public partial class AutoQTEConfig : ObservableObject
     [ObservableProperty] private bool _enabled = true;
     
     /// <summary>
-    /// 防恐惧震慑
+    /// 敌人靠近自动松手，防触发恐惧震慑
     /// </summary>
     [ObservableProperty] private bool _preventTerrorShock = false;
     
