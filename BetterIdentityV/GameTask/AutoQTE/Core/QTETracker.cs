@@ -53,11 +53,14 @@ public class QTETracker
         }
 
         var red = redAngle.Value;
-        // 红色指针总是从左侧出现
+        // 过滤干扰项，红色指针总是从左侧出现
         if (_redHistory.Count == 0 && red >= QTEAssets.NewRedMaxAngle)
         {
             return new QTETrackResult(null, "Red Not Left");
         }
+        
+        double timeModelK = 0;
+        double timeModelB = 0;
 
         // 以防截图帧率>游戏帧率，过滤重复采样数据
         if (_redHistory.Count == 0 || Math.Abs(red - _redHistory.Last().Angle) > 0.1)
@@ -70,13 +73,17 @@ public class QTETracker
 
         if (_redHistory.Count >= 3)
         {
-            var speed = FitSpeed(_redHistory);
+            var (k, b) = FitTimeByAngle(_redHistory);
+            // k 的单位是 秒/度，角速度 = 1 / k (度/秒)
+            var speed = k > 0 ? 1.0 / k : 0;
             if (speed < QTEAssets.MinAngularSpeedDps)
             {
                 return new QTETrackResult(null, "Too Slow");
             }
 
             _angularSpeed = speed;
+            timeModelK = k;
+            timeModelB = b;
         }
         else
         {
@@ -92,8 +99,9 @@ public class QTETracker
 
         var lockedYellow = _lockedYellow.Value;
         var targetAngle = lockedYellow.Start + (lockedYellow.End - lockedYellow.Start) / 3d;
-        var timeToTarget = (targetAngle - red) / _angularSpeed;
-        var hitTimeSec = currentTimeSec + timeToTarget - delayCompSec;
+        // 通过反向模型直接计算绝对预测时间：Time = K * Angle + B
+        var predictedHitTime = timeModelK * targetAngle + timeModelB;
+        var hitTimeSec = predictedHitTime - delayCompSec;
 
         if (hitTimeSec > currentTimeSec)
         {
@@ -163,32 +171,37 @@ public class QTETracker
         }
     }
 
-    private static double FitSpeed(IEnumerable<(double Angle, double TimeSec)> history)
+    /// <summary>
+    /// 异步采样会遇到时间混叠问题，最坏情况下采样时间存在(游戏渲染帧间隔+截图采样间隔)的相位差，存在致命的抖动<br/>
+    /// 但是调试发现过滤重复采样数据后的角度极其精准且规律，因此使用反向回归，使用角度拟合时间<br/>
+    /// Time = k' * Angle + b'
+    /// </summary>
+    /// <param name="history"></param>
+    /// <returns></returns>
+    private static (double K, double B) FitTimeByAngle(IEnumerable<(double Angle, double TimeSec)> history)
     {
         var points = history.ToArray();
-        var firstTime = points[0].TimeSec;
-        var sumX = 0d;
-        var sumY = 0d;
-        var sumXy = 0d;
-        var sumX2 = 0d;
+        var count = points.Length;
+        if (count < 2) return (0, 0);
+        
+        double sumX = 0, sumY = 0, sumXy = 0, sumX2 = 0; // 注意：这里 X 是 Angle，Y 是 Time
 
         foreach (var (angle, timeSec) in points)
         {
-            var x = timeSec - firstTime;
-            sumX += x;
-            sumY += angle;
-            sumXy += x * angle;
-            sumX2 += x * x;
+            sumX += angle;
+            sumY += timeSec;
+            sumXy += angle * timeSec;
+            sumX2 += angle * angle;
         }
-
-        var count = points.Length;
+        
         var denominator = count * sumX2 - sumX * sumX;
-        if (Math.Abs(denominator) < double.Epsilon)
-        {
-            return 0d;
-        }
+        if (Math.Abs(denominator) < double.Epsilon) return (0, 0);
 
-        return (count * sumXy - sumX * sumY) / denominator;
+        // k' = d(Time) / d(Angle)  -> 物理意义是“每度需要多少秒”（角速度的倒数）
+        var k = (count * sumXy - sumX * sumY) / denominator; 
+        var b = (sumY - k * sumX) / count;
+        
+        return (k, b);
     }
 
     private static void TrimByAge<T>(Queue<(T Value, double TimeSec)> queue, double currentTimeSec, double maxAgeSec)
