@@ -58,22 +58,18 @@ public class QTETracker
         {
             return new QTETrackResult(null, "Red Not Left");
         }
-        
-        double timeModelK = 0;
-        double timeModelB = 0;
 
         // 以防截图帧率>游戏帧率，过滤重复采样数据
         if (_redHistory.Count == 0 || Math.Abs(red - _redHistory.Last().Angle) > 0.1)
         {
             _redHistory.Enqueue((red, currentTimeSec));
-            Console.WriteLine($"Add to redHistory with angle: {red}, time: {currentTimeSec:0.###}");
         }
 
         TrimByAge(_redHistory, currentTimeSec, QTEAssets.RedTimeWindowSec);
 
         if (_redHistory.Count >= 3)
         {
-            var (k, b) = FitTimeByAngle(_redHistory);
+            var (k, _) = FitTimeByAngle(_redHistory); // 截距会随窗口滑动漂移，不稳定，直接丢弃
             // k 的单位是 秒/度，角速度 = 1 / k (度/秒)
             var speed = k > 0 ? 1.0 / k : 0;
             if (speed < QTEAssets.MinAngularSpeedDps)
@@ -82,8 +78,6 @@ public class QTETracker
             }
 
             _angularSpeed = speed;
-            timeModelK = k;
-            timeModelB = b;
         }
         else
         {
@@ -98,10 +92,10 @@ public class QTETracker
         }
 
         var lockedYellow = _lockedYellow.Value;
-        var targetAngle = lockedYellow.Start + (lockedYellow.End - lockedYellow.Start) / 3d;
-        // 通过反向模型直接计算绝对预测时间：Time = K * Angle + B
-        var predictedHitTime = timeModelK * targetAngle + timeModelB;
-        var hitTimeSec = predictedHitTime - delayCompSec;
+        var targetAngle = lockedYellow.Start;
+        // 以当前帧为锚点，使用稳定的平均速度进行增量外推
+        var timeToTarget = (targetAngle - red) / _angularSpeed;
+        var hitTimeSec = currentTimeSec + timeToTarget - delayCompSec;
 
         if (hitTimeSec > currentTimeSec)
         {
@@ -114,11 +108,10 @@ public class QTETracker
             {
                 var minHit = _hitTimeHistory.Min(i => i.HitTimeSec);
                 var maxHit = _hitTimeHistory.Max(i => i.HitTimeSec);
-                Console.WriteLine($"预测队列样本数: {_hitTimeHistory.Count}, 极差: {maxHit - minHit} sec");
                 if (maxHit - minHit <= _assets.HitTimeTolerance)
                 {
                     var finalHitTime = _hitTimeHistory.Average(i => i.HitTimeSec);
-                    _lastHitTimeSec = currentTimeSec;
+                    _lastHitTimeSec = finalHitTime;
                     Clear(_hitTimeHistory);
                     return new QTETrackResult(finalHitTime, QTETrackStatus.PredictHit);
                 }

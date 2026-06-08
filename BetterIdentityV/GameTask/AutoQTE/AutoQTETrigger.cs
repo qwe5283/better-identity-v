@@ -128,7 +128,7 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable
     /// <summary>
     /// 处理主循环
     /// </summary>
-    private void WorkerLoop(CancellationToken token, IGameCapture capture)
+    private void WorkerLoop(CancellationToken token, IGameCapture? capture)
     {
         while (!token.IsCancellationRequested)
         {
@@ -150,9 +150,9 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable
                 
                 var currentTimeSec = GetTimestampSec();
                 speedTimer.Record("捕获");
-                using var frame1080p = NormalizeTo1080p(rawFrame);
+                using var frame1080P = NormalizeTo1080P(rawFrame);
                 speedTimer.Record("转1080P");
-                var detection = _detector?.Process(frame1080p) ?? default;
+                var detection = _detector?.Process(frame1080P) ?? default;
                 speedTimer.Record("提取指针角度和黄色范围");
                 var trackResult = _tracker?.Update(
                     detection.RedAngle,
@@ -198,7 +198,7 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable
         _logger.LogInformation("自动校准触发按键{Key}", _assets.VkHitQTE);
     }
 
-    private static Mat NormalizeTo1080p(Mat frame)
+    private static Mat NormalizeTo1080P(Mat frame)
     {
         if (frame.Width == 1920 && frame.Height == 1080)
         {
