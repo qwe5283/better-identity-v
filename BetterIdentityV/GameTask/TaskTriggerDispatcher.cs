@@ -166,7 +166,11 @@ public class TaskTriggerDispatcher : IDisposable
                 var pName = SystemControl.GetActiveProcessName();
                 if (pName != "dwrg" && pName != "MuMuNxDevice")
                 {
-                    maskWindow.Invoke(() => { maskWindow.Hide(); });
+                    maskWindow.Invoke(() =>
+                    {
+                        maskWindow.Topmost = false;
+                        maskWindow.Hide();
+                    });
                 }
 
                 _prevGameActive = active;
@@ -201,6 +205,7 @@ public class TaskTriggerDispatcher : IDisposable
                     if (maskWindow.IsExist())
                     {
                         maskWindow.Show();
+                        maskWindow.Topmost = true;
                     }
                 });
 
