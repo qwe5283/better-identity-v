@@ -177,14 +177,14 @@ public class PostMessageSimulator
     public PostMessageSimulator KeyDownBackground(User32.VK vk)
     {
         User32.PostMessage(_hWnd, User32.WindowMessage.WM_ACTIVATE, 1, 0);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYDOWN, (nint)vk, 0x1e0001);
+        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYDOWN, (nint)vk, MakeLParamKeyDown(vk));
         return this;
     }
 
     public PostMessageSimulator KeyUpBackground(User32.VK vk)
     {
         User32.PostMessage(_hWnd, User32.WindowMessage.WM_ACTIVATE, 1, 0);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYUP, (nint)vk, unchecked((nint)0xc01e0001));
+        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYUP, (nint)vk, MakeLParamKeyUp(vk));
         return this;
     }
 
