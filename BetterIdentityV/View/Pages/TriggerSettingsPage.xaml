@@ -19,14 +19,19 @@
                       FontTypography="BodyStrong"
                       Text="实时触发的自动化任务设置" />
         <!-- 自动校准 -->
-        <ui:CardControl Margin="0,0,0,12"
-                        Icon="{ui:SymbolIcon Flash24}">
-            <ui:CardControl.Header>
+        <ui:CardExpander Margin="0,0,0,12"
+                         ContentPadding="0" 
+                         Icon="{ui:SymbolIcon Flash24}">
+            <ui:CardExpander.Header>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                     <ui:TextBlock Grid.Row="0"
                                   Grid.Column="0"
                                   FontTypography="Body"
@@ -35,12 +40,70 @@
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="当出现校准QTE时，自动按下空格键校准，适用于治疗和破译"
+                                  Text="当出现校准快速反应事件时，自动按下空格键校准，适用于治疗和破译"
                                   TextWrapping="Wrap" />
+                    <ui:ToggleSwitch Grid.Row="0"
+                                     Grid.RowSpan="2"
+                                     Grid.Column="1"
+                                     Margin="0,0,24,0" 
+                                     IsChecked="{Binding Config.AutoQTEConfig.Enabled, Mode=TwoWay}" />
                 </Grid>
-            </ui:CardControl.Header>
-            <ui:ToggleSwitch Margin="0,0,40,0" IsChecked="{Binding Config.AutoQTEConfig.Enabled, Mode=TwoWay}" />
-        </ui:CardControl>
+            </ui:CardExpander.Header>
+            <StackPanel>
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="延迟补偿参数（毫秒）"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="如果校准总是晚触发，可以增大此参数"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBox Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                MinWidth="90"
+                                VerticalAlignment="Center"
+                                Margin="0,0,24,0"
+                                Text="{Binding Config.AutoQTEConfig.SystemDelayMs, Mode=TwoWay}" />
+                </Grid>
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="后台校准"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="切换到别的软件窗口后，继续在后台托管校准"
+                                  TextWrapping="Wrap" />
+                    <ui:ToggleSwitch Grid.Row="0"
+                                     Grid.RowSpan="2"
+                                     Grid.Column="1"
+                                     Margin="0,0,36,0"
+                                     IsChecked="{Binding Config.AutoQTEConfig.RunBackgroundEnabled, Mode=TwoWay}" />
+                </Grid>
+            </StackPanel>
+        </ui:CardExpander>
         <!-- 自动拾取 -->
         <ui:CardExpander Margin="0,0,0,12" 
                          ContentPadding="0" 

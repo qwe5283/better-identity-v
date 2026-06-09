@@ -2,197 +2,227 @@
 
 namespace BetterIdentityV.GameTask.AutoQTE.Core;
 
+public readonly record struct QTEAngleSpan(double Start, double End);
+
+public readonly record struct QTEDetectionResult(double? RedAngle, QTEAngleSpan? YellowSpan);
+
 public class QTEDetector : IDisposable
 {
-    public int Width { get; }
-    public int Height { get; }
-
     private readonly QTEAssets _assets;
-    private readonly Point _arcCenter;
-    private readonly int _radius;
-    private readonly int _thickness;
-    private readonly int _redInnerRadius;
-    private readonly int _minYellowArea;
+    private readonly Point2f _localCenter;
+    private readonly Rect _roiRect;
+    private readonly bool[] _validAngleMask;
 
-    private readonly Mat _arcMask;
-    private readonly Rect _arcRoi;
-    private readonly Mat _arcMaskRoi;
-    private readonly Mat _kernelNoise;
-    private bool _disposed = false;
-    
-    public QTEDetector(int width, int height, QTEAssets assets)
+    private const int PolarHeight = 720;
+    private const int PolarWidth = QTEAssets.Radius;
+    private const double AngleResolution = PolarHeight / 360d;
+
+    public QTEDetector(QTEAssets assets)
     {
-        Width = width;
-        Height = height;
         _assets = assets;
 
-        _arcCenter = new Point((int)(assets.ArcCenterX * width), (int)(assets.ArcCenterY * height));
-        _radius = (int)(assets.Radius * height);
-        _thickness = (int)(assets.Thickness * height);
-        _redInnerRadius = Math.Max(_radius - (int)(_thickness * assets.RedInnerExtendMult), 1);
+        var squareHalf = QTEAssets.Radius + 10;
+        var x1 = Math.Max(0, QTEAssets.ArcCenterX - squareHalf);
+        var y1 = Math.Max(0, QTEAssets.ArcCenterY - squareHalf);
+        var x2 = Math.Min(1920, QTEAssets.ArcCenterX + squareHalf);
+        var y2 = Math.Min(1080, QTEAssets.ArcCenterY + squareHalf);
 
-        _arcMask = GenerateCircularArcMask();
-        _minYellowArea = Math.Max(1, (int)(Cv2.CountNonZero(_arcMask) * 0.025));
-
-        int kSize = Math.Max(3, height / 300);
-        if (kSize % 2 == 0) kSize++;
-        _kernelNoise = Cv2.GetStructuringElement(MorphShapes.Ellipse, new Size(kSize, kSize));
-
-        _arcRoi = Cv2.BoundingRect(_arcMask);
-        _arcMaskRoi = new Mat(_arcMask, _arcRoi);
+        _roiRect = new Rect(x1, y1, x2 - x1, y2 - y1);
+        _localCenter = new Point2f(QTEAssets.ArcCenterX - x1, QTEAssets.ArcCenterY - y1);
+        _validAngleMask = BuildValidAngleMask();
     }
 
-    private Mat GenerateCircularArcMask()
+    public QTEDetectionResult Process(Mat frame1080p)
     {
-        var mask = new Mat(Height, Width, MatType.CV_8UC1, Scalar.Black);
-        int innerRadius = Math.Max(_radius - _thickness, 1);
-
-        int numPoints = (int)((_assets.EndAngle - _assets.StartAngle) * 2 + 1);
-        var angles = new double[numPoints];
-        for (int i = 0; i < numPoints; i++)
+        if (frame1080p.Empty())
         {
-            angles[i] = (_assets.StartAngle + (double)i / (numPoints - 1) * (_assets.EndAngle - _assets.StartAngle)) * Math.PI / 180.0;
+            return default;
         }
 
-        var outerPoints = new Point[numPoints];
-        var innerPoints = new Point[numPoints];
-
-        for (int i = 0; i < numPoints; i++)
+        using var frame = EnsureBgr(frame1080p);
+        if (frame.Width < _roiRect.Right || frame.Height < _roiRect.Bottom)
         {
-            double cosA = Math.Cos(angles[i]);
-            double sinA = Math.Sin(angles[i]);
-            outerPoints[i] = new Point((int)(_arcCenter.X + _radius * cosA), (int)(_arcCenter.Y + _radius * sinA));
-            innerPoints[i] = new Point((int)(_arcCenter.X + innerRadius * cosA), (int)(_arcCenter.Y + innerRadius * sinA));
+            return default;
         }
 
-        var polygon = new Point[numPoints * 2];
-        Array.Copy(outerPoints, polygon, numPoints);
-        Array.Copy(innerPoints.Reverse().ToArray(), 0, polygon, numPoints, numPoints);
-
-        Cv2.FillPoly(mask, new[] { polygon }, Scalar.White);
-        return mask;
-    }
-    
-    public (double? redAngle, (double start, double end)? yellowSpan) ProcessFrame(Mat frame)
-    {
-        using var frameRoi = new Mat(frame, _arcRoi);
-        using var hsvRoi = new Mat();
-        Cv2.CvtColor(frameRoi, hsvRoi, ColorConversionCodes.BGR2HSV);
-
-        using var maskYellow = new Mat();
-        Cv2.InRange(hsvRoi, _assets.YellowLower, _assets.YellowUpper, maskYellow);
-        Cv2.MorphologyEx(maskYellow, maskYellow, MorphTypes.Close, _kernelNoise);
-        Cv2.BitwiseAnd(maskYellow, _arcMaskRoi, maskYellow);
+        using var roi = new Mat(frame, _roiRect);
+        using var hsv = new Mat();
+        Cv2.CvtColor(roi, hsv, ColorConversionCodes.BGR2HSV);
 
         using var maskRed1 = new Mat();
         using var maskRed2 = new Mat();
         using var maskRed = new Mat();
-        Cv2.InRange(hsvRoi, _assets.RedLower1, _assets.RedUpper1, maskRed1);
-        Cv2.InRange(hsvRoi, _assets.RedLower2, _assets.RedUpper2, maskRed2);
+        using var maskYellow = new Mat();
+        Cv2.InRange(hsv, _assets.RedLower1, _assets.RedUpper1, maskRed1);
+        Cv2.InRange(hsv, _assets.RedLower2, _assets.RedUpper2, maskRed2);
         Cv2.BitwiseOr(maskRed1, maskRed2, maskRed);
-        Cv2.MorphologyEx(maskRed, maskRed, MorphTypes.Close, _kernelNoise);
+        Cv2.InRange(hsv, _assets.YellowLower, _assets.YellowUpper, maskYellow);
 
-        double? redAngle = GetRedFrontAngle(maskRed);
-        var yellowSpan = GetYellowAngleSpan(maskYellow);
+        using var polarRed = new Mat();
+        using var polarYellow = new Mat();
+        Cv2.WarpPolar(
+            maskRed,
+            polarRed,
+            new Size(PolarWidth, PolarHeight),
+            _localCenter,
+            QTEAssets.Radius,
+            InterpolationFlags.Linear,
+            WarpPolarMode.Linear);
+        Cv2.WarpPolar(
+            maskYellow,
+            polarYellow,
+            new Size(PolarWidth, PolarHeight),
+            _localCenter,
+            QTEAssets.Radius,
+            InterpolationFlags.Linear,
+            WarpPolarMode.Linear);
 
-        return (redAngle, yellowSpan);
-    }
-    
-    private double? GetRedFrontAngle(Mat maskRed)
-    {
-        using var pointsMat = new Mat();
-        Cv2.FindNonZero(maskRed, pointsMat);
-        if (pointsMat.Empty()) return null;
+        var innerYellowRadius = Math.Max(0, QTEAssets.Radius - QTEAssets.Thickness - 5);
+        var innerRedRadius = Math.Max(0, QTEAssets.Radius - QTEAssets.Thickness * 4);
 
-        pointsMat.GetArray(out Point[] points);
-        int localCenterX = _arcCenter.X - _arcRoi.X;
-        int localCenterY = _arcCenter.Y - _arcRoi.Y;
+        var redAngle = GetRedAngle(polarRed, innerRedRadius);
+        var yellowSpan = GetYellowSpan(polarYellow, innerYellowRadius);
 
-        int N = _assets.RedRadialSegments;
-        bool[,] segmentPresent = new bool[N, 360];
-        var validPoints = new List<(Point pt, double angleDeg, double dist)>();
-
-        double radiusDiff = _radius - _redInnerRadius;
-        if (radiusDiff <= 0) return null;
-
-        foreach (var pt in points)
-        {
-            double dx = pt.X - localCenterX;
-            double dy = pt.Y - localCenterY;
-            double dist = Math.Sqrt(dx * dx + dy * dy);
-
-            if (dist < _redInnerRadius || dist > _radius) continue;
-
-            double angleDeg = Math.Atan2(dy, dx) * 180.0 / Math.PI;
-            if (angleDeg < 0) angleDeg += 360.0;
-            int angleBin = (int)Math.Floor(angleDeg);
-            if (angleBin < 0 || angleBin >= 360) continue;
-
-            int segIdx = (int)((dist - _redInnerRadius) / radiusDiff * N);
-            if (segIdx >= N) segIdx = N - 1;
-            if (segIdx < 0) segIdx = 0;
-
-            segmentPresent[segIdx, angleBin] = true;
-            validPoints.Add((pt, angleDeg, dist));
-        }
-
-        bool[] angleValid = new bool[360];
-        for (int i = 0; i < 360; i++)
-        {
-            bool valid = true;
-            for (int j = 0; j < N; j++)
-            {
-                if (!segmentPresent[j, i]) { valid = false; break; }
-            }
-            angleValid[i] = valid;
-        }
-
-        double maxAngle = -1;
-        foreach (var item in validPoints)
-        {
-            int angleBin = (int)Math.Floor(item.angleDeg);
-            if (angleBin >= 0 && angleBin < 360 && angleValid[angleBin])
-            {
-                if (item.angleDeg > maxAngle) maxAngle = item.angleDeg;
-            }
-        }
-
-        return maxAngle >= 0 ? maxAngle : null;
-    }
-    
-    private (double start, double end)? GetYellowAngleSpan(Mat maskYellow)
-    {
-        Cv2.FindContours(maskYellow, out Point[][] contours, out HierarchyIndex[] hierarchy, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
-        if (contours.Length == 0) return null;
-
-        Point[] maxContour = contours.OrderByDescending(c => Cv2.ContourArea(c)).First();
-        if (Cv2.ContourArea(maxContour) < _minYellowArea) return null;
-
-        int localCenterX = _arcCenter.X - _arcRoi.X;
-        int localCenterY = _arcCenter.Y - _arcRoi.Y;
-
-        double minAngle = 360, maxAngle = 0;
-        foreach (var pt in maxContour)
-        {
-            double dx = pt.X - localCenterX;
-            double dy = pt.Y - localCenterY;
-            double angleDeg = Math.Atan2(dy, dx) * 180.0 / Math.PI;
-            if (angleDeg < 0) angleDeg += 360.0;
-            if (angleDeg < minAngle) minAngle = angleDeg;
-            if (angleDeg > maxAngle) maxAngle = angleDeg;
-        }
-
-        return (minAngle, maxAngle);
+        return new QTEDetectionResult(redAngle, yellowSpan);
     }
 
     public void Dispose()
     {
-        if (!_disposed)
+        GC.SuppressFinalize(this);
+    }
+
+    private static Mat EnsureBgr(Mat source)
+    {
+        if (source.Channels() == 3)
         {
-            _arcMask?.Dispose();
-            _arcMaskRoi?.Dispose();
-            _kernelNoise?.Dispose();
-            _disposed = true;
+            return source.Clone();
         }
+
+        var converted = new Mat();
+        if (source.Channels() == 4)
+        {
+            Cv2.CvtColor(source, converted, ColorConversionCodes.BGRA2BGR);
+        }
+        else if (source.Channels() == 1)
+        {
+            Cv2.CvtColor(source, converted, ColorConversionCodes.GRAY2BGR);
+        }
+        else
+        {
+            throw new NotSupportedException($"Unsupported frame channel count: {source.Channels()}");
+        }
+
+        return converted;
+    }
+
+    private double? GetRedAngle(Mat polarRed, int innerRadius)
+    {
+        var radialThickness = QTEAssets.Radius - innerRadius;
+        var threshold = radialThickness * 255 * 0.8;
+        var maxIndex = -1;
+
+        for (var angleIndex = 0; angleIndex < polarRed.Rows; angleIndex++)
+        {
+            if (!_validAngleMask[angleIndex])
+            {
+                continue;
+            }
+
+            var sum = SumRowBand(polarRed, angleIndex, innerRadius, QTEAssets.Radius);
+            if (sum > threshold)
+            {
+                maxIndex = angleIndex;
+            }
+        }
+
+        return maxIndex < 0 ? null : maxIndex / AngleResolution;
+    }
+
+    private QTEAngleSpan? GetYellowSpan(Mat polarYellow, int innerRadius)
+    {
+        var radialThickness = QTEAssets.Radius - innerRadius;
+        var threshold = radialThickness * 255 * 0.2;
+        var bestStart = -1;
+        var bestEnd = -1;
+        var bestLength = 0;
+        var currentStart = -1;
+        var currentLength = 0;
+
+        for (var angleIndex = 0; angleIndex < polarYellow.Rows; angleIndex++)
+        {
+            var valid = _validAngleMask[angleIndex] &&
+                        SumRowBand(polarYellow, angleIndex, innerRadius, QTEAssets.Radius) > threshold;
+
+            if (valid)
+            {
+                if (currentStart < 0)
+                {
+                    currentStart = angleIndex;
+                }
+
+                currentLength++;
+                continue;
+            }
+
+            CommitCurrentSegment(angleIndex - 1);
+        }
+
+        CommitCurrentSegment(polarYellow.Rows - 1);
+
+        if (bestStart < 0)
+        {
+            return null;
+        }
+
+        var spanDeg = (bestEnd - bestStart) / AngleResolution;
+        if (spanDeg is < QTEAssets.MinYellowSpanDeg or > QTEAssets.MaxYellowSpanDeg)
+        {
+            return null;
+        }
+
+        return new QTEAngleSpan(bestStart / AngleResolution, bestEnd / AngleResolution);
+
+        void CommitCurrentSegment(int currentEnd)
+        {
+            if (currentStart < 0)
+            {
+                return;
+            }
+
+            if (currentLength > bestLength)
+            {
+                bestStart = currentStart;
+                bestEnd = currentEnd;
+                bestLength = currentLength;
+            }
+
+            currentStart = -1;
+            currentLength = 0;
+        }
+    }
+
+    private static long SumRowBand(Mat mat, int row, int startCol, int endCol)
+    {
+        long sum = 0;
+        for (var col = startCol; col < endCol; col++)
+        {
+            sum += mat.At<byte>(row, col);
+        }
+
+        return sum;
+    }
+
+    private static bool[] BuildValidAngleMask()
+    {
+        var mask = new bool[PolarHeight];
+        var startIndex = (int)(QTEAssets.StartAngle * AngleResolution);
+        var endIndex = (int)(QTEAssets.EndAngle * AngleResolution);
+
+        for (var i = startIndex; i < endIndex && i < mask.Length; i++)
+        {
+            mask[i] = true;
+        }
+
+        return mask;
     }
 }

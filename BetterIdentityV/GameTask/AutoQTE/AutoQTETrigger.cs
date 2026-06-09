@@ -1,20 +1,26 @@
 ﻿using System.Diagnostics;
 using BetterIdentityV.Core.Simulator;
+using BetterIdentityV.GameCapture;
 using BetterIdentityV.GameTask.AutoQTE.Core;
+using BetterIdentityV.Helpers;
 using Microsoft.Extensions.Logging;
-using Vanara.PInvoke;
+using OpenCvSharp;
 
 namespace BetterIdentityV.GameTask.AutoQTE;
 
-public class AutoQTETrigger : ITaskTrigger
+public class AutoQTETrigger : ITaskTrigger, IDisposable
 {
     private readonly ILogger<AutoQTETrigger> _logger = App.GetLogger<AutoQTETrigger>();
+    private readonly object _loopLock = new();
+    private readonly QTEAssets _assets = new();
+    
     private bool _isEnabled;
-    private Thread _workerThread;
-    private CancellationTokenSource _cts;
-    private QTEAssets _assets;
-    private QTEDetector _detector;
-    private QTETracker _tracker;
+    private QTEDetector? _detector;
+    private QTETracker? _tracker;
+    private Thread? _workerThread;
+    private CancellationTokenSource? _workerCts;
+    private double _delayCompSec;
+    private bool _backgroundOperation;
     
     public string Name => "自动QTE校准";
 
@@ -23,31 +29,31 @@ public class AutoQTETrigger : ITaskTrigger
         get => _isEnabled;
         set
         {
+            if (_isEnabled == value)
+            {
+                if (_isEnabled)
+                    StartLoop();
+                return;
+            }
+
             _isEnabled = value;
-            // 停止独立线程循环
-            if (!_isEnabled)
+            if (_isEnabled)
+                StartLoop();
+            else
                 StopLoop();
         }
     }
     public int Priority => 30;
+    // 自定义后台截图循环实现，不需要托管调度器后台截图，独占和后台运行均保留false，自己实现
     public bool IsExclusive => false;
-    public bool IsBackgroundRunning => false; // 自定义截图循环实现，不需要托管调度器后台截图
-
-    public AutoQTETrigger()
-    {
-    }
+    public bool IsBackgroundRunning => false;
 
     public void Init()
     {
         var config = TaskContext.Instance().Config.AutoQTEConfig;
+        _delayCompSec = Math.Max(0d, config.SystemDelayMs) / 1000d;
         IsEnabled = config.Enabled;
-        
-        _assets = new QTEAssets();
-        // 启动独立线程循环
-        if (IsEnabled)
-        {
-            StartLoop();
-        }
+        _backgroundOperation = config.RunBackgroundEnabled;
     }
 
     public void OnCapture(CaptureContent content)
@@ -57,85 +63,175 @@ public class AutoQTETrigger : ITaskTrigger
 
     private void StartLoop()
     {
-        if (_workerThread != null && _workerThread.IsAlive) return;
-        
-        _cts = new CancellationTokenSource();
-        _workerThread = new Thread(WorkerLoop) { IsBackground = true, Name = "AutoQTE_Worker" };
-        _workerThread.Start();
-        
-        _logger.LogInformation("AutoQTE触发器启动后台循环");
+        lock (_loopLock)
+        {
+            if (_workerThread?.IsAlive == true)
+                return;
+
+            _workerCts?.Dispose();
+            _workerCts = null;
+            _detector?.Dispose();
+            _detector = new QTEDetector(_assets);
+            _tracker = new QTETracker(_assets);
+            var capture = TaskTriggerDispatcher.Instance().GameCapture;
+            _workerCts = new CancellationTokenSource();
+            _workerThread = new Thread(() => WorkerLoop(_workerCts.Token, capture))
+            {
+                IsBackground = true,
+                Name = "AutoQTEWorker"
+            };
+            _workerThread.Start();
+            _logger.LogDebug("启动QTE线程");
+        }
     }
     
     private void StopLoop()
     {
-        _cts?.Cancel();
-        bool alreadyTerminated = _workerThread?.Join(500) ?? false;
-        if (!alreadyTerminated)
-            _logger.LogError("AutoQTE线程停止超时");
-        _cts?.Dispose();
-        _cts = null;
-        _workerThread = null;
-        
-        _detector?.Dispose();
-        _detector = null;
-        _tracker = null;
-        
-        _logger.LogInformation("AutoQTE触发器停止后台循环");
+        Thread? threadToJoin;
+        lock (_loopLock)
+        {
+            if (_workerThread is null && _workerCts is null && _detector is null && _tracker is null)
+            {
+                return;
+            }
+
+            _logger.LogDebug("结束QTE线程");
+            _workerCts?.Cancel();
+            threadToJoin = _workerThread;
+        }
+
+        if (threadToJoin is not null && threadToJoin.IsAlive && threadToJoin != Thread.CurrentThread)
+        {
+            threadToJoin.Join(TimeSpan.FromSeconds(1));
+            if (threadToJoin.IsAlive)
+            {
+                _logger.LogWarning("QTE线程未能在超时时间内结束，将等待其响应取消信号");
+                return;
+            }
+        }
+
+        lock (_loopLock)
+        {
+            _workerCts?.Dispose();
+            _workerCts = null;
+            _workerThread = null;
+            _detector?.Dispose();
+            _detector = null;
+            _tracker = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        StopLoop();
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
-    /// 截图主循环
+    /// 处理主循环
     /// </summary>
-    private void WorkerLoop()
+    private void WorkerLoop(CancellationToken token, IGameCapture? capture)
     {
-        var dispatcher = TaskTriggerDispatcher.Instance();
-
-        while (!_cts.Token.IsCancellationRequested)
+        while (!token.IsCancellationRequested)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            
+            SpeedTimer speedTimer = new SpeedTimer("QTE线程");
             try
             {
-                using var frame = dispatcher.GameCapture.Capture();
-                if (frame == null || frame.IsDisposed || frame.Empty())
+                if (capture is not { IsCapturing: true })
                 {
-                    Thread.Sleep(10);
+                    token.WaitHandle.WaitOne(50);
                     continue;
                 }
 
-                // 动态适配分辨率变化
-                if (_detector == null || _detector.Width != frame.Width || _detector.Height != frame.Height)
+                using var rawFrame = capture.Capture();
+                if (rawFrame is null || rawFrame.Empty())
                 {
-                    _detector?.Dispose();
-                    _detector = new QTEDetector(frame.Width, frame.Height, _assets);
-                    _tracker = new QTETracker(_assets);
+                    token.WaitHandle.WaitOne(10);
+                    continue;
                 }
-
-                var (redAngle, yellowSpan) = _detector.ProcessFrame(frame);
-                double delaySec = _assets.ClientDelayMs / 1000.0;
-
-                bool isHit = _tracker.UpdateAndCheck(redAngle, yellowSpan, delaySec);
-
-                if (isHit)
+                
+                var currentTimeSec = GetTimestampSec();
+                speedTimer.Record("捕获");
+                using var frame1080P = NormalizeTo1080P(rawFrame);
+                speedTimer.Record("转1080P");
+                var detection = _detector?.Process(frame1080P) ?? default;
+                speedTimer.Record("提取指针角度和黄色范围");
+                var trackResult = _tracker?.Update(
+                    detection.RedAngle,
+                    detection.YellowSpan,
+                    currentTimeSec,
+                    _delayCompSec) ?? default;
+                
+                if (trackResult.Status == QTETrackStatus.EmergencyHit) 
+                    _logger.LogWarning("预测拟合校准时间模型失败");
+                
+                if (trackResult is { ShouldHit: true, HitTimeSec: not null })
                 {
-                    Simulation.SendInput.Keyboard.KeyPress(User32.VK.VK_SPACE);
-                    _logger.LogInformation("AutoQTE按键触发");
+                    ExecuteHitAt(trackResult.HitTimeSec.Value, token);
                 }
-
-                // 限制最高帧率避免过度占用 CPU (约 120~250 FPS)
-                Thread.Sleep(3);
             }
-            catch (Exception e)
+            catch (OperationCanceledException)
             {
-                Console.WriteLine(e.ToString());
-                // 忽略截图丢失或窗口句柄失效等瞬时异常
-                Thread.Sleep(50);
+                break;
             }
-            
-            sw.Stop();
-            double elapsed = sw.Elapsed.TotalMilliseconds;
-            Console.WriteLine($"Elapsed: {elapsed}ms | Fps: {1000 / elapsed}");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "自动QTE处理循环异常");
+                token.WaitHandle.WaitOne(100);
+            }
+            speedTimer.DebugPrint();
         }
+    }
+    
+    private void ExecuteHitAt(double hitTimeSec, CancellationToken token)
+    {
+        Random random = new Random();
+        
+        var delayMs = (int)Math.Round((hitTimeSec - GetTimestampSec()) * 1000d);
+        if (delayMs > 1)
+        {
+            token.WaitHandle.WaitOne(delayMs);
+        }
+
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        if (_backgroundOperation)
+        {
+            TaskContext.Instance().PostMessageSimulator?.LongKeyPress(_assets.VkHitQTE, random.Next(500, 1000));
+        }
+        else
+        {
+            if (SystemControl.IsGameActive())
+            {
+                Simulation.SendInput.Keyboard.KeyPress(_assets.VkHitQTE);
+            }
+        }
+
+        _logger.LogInformation("自动校准触发按键{Key}", _assets.VkHitQTE);
+    }
+
+    private static Mat NormalizeTo1080P(Mat frame)
+    {
+        if (frame.Width == 1920 && frame.Height == 1080)
+        {
+            return frame.Clone();
+        }
+
+        var targetHeight = (int)Math.Round(frame.Height * (1920d / frame.Width));
+        var resized = new Mat();
+        Cv2.Resize(frame, resized, new Size(1920, targetHeight));
+        return resized;
+    }
+
+    /// <summary>
+    /// 获取高精度时间戳（秒）
+    /// </summary>
+    /// <returns></returns>
+    private static double GetTimestampSec()
+    {
+        return Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
     }
 }

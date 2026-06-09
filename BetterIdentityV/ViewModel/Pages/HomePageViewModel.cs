@@ -86,6 +86,7 @@ public partial class HomePageViewModel : ViewModel
                     _taskDispatcher.UiTaskStartTickEvent += OnUiTaskStartTick;
                     _maskWindow ??= new MaskWindow(); // 延迟初始化
                     _maskWindow.Show();
+                    _maskWindow.Topmost = true;
                     MaskWindow.Instance().RefreshPosition();
                     TaskDispatcherEnabled = true;
                 }
@@ -162,6 +163,7 @@ public partial class HomePageViewModel : ViewModel
                 _taskDispatcher.Stop();
                 if (_maskWindow != null && _maskWindow.IsExist())
                 {
+                    _maskWindow.Topmost = false;
                     _maskWindow?.Hide();
                 }
                 else
