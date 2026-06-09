@@ -12,14 +12,15 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable
 {
     private readonly ILogger<AutoQTETrigger> _logger = App.GetLogger<AutoQTETrigger>();
     private readonly object _loopLock = new();
+    private readonly QTEAssets _assets = new();
     
     private bool _isEnabled;
-    private QTEAssets _assets = new();
     private QTEDetector? _detector;
     private QTETracker? _tracker;
     private Thread? _workerThread;
     private CancellationTokenSource? _workerCts;
     private double _delayCompSec;
+    private bool _backgroundOperation;
     
     public string Name => "自动QTE校准";
 
@@ -52,6 +53,7 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable
         var config = TaskContext.Instance().Config.AutoQTEConfig;
         _delayCompSec = Math.Max(0d, config.SystemDelayMs) / 1000d;
         IsEnabled = config.Enabled;
+        _backgroundOperation = config.RunBackgroundEnabled;
     }
 
     public void OnCapture(CaptureContent content)
@@ -183,6 +185,8 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable
     
     private void ExecuteHitAt(double hitTimeSec, CancellationToken token)
     {
+        Random random = new Random();
+        
         var delayMs = (int)Math.Round((hitTimeSec - GetTimestampSec()) * 1000d);
         if (delayMs > 1)
         {
@@ -194,7 +198,18 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable
             return;
         }
 
-        Simulation.SendInput.Keyboard.KeyPress(_assets.VkHitQTE);
+        if (_backgroundOperation)
+        {
+            TaskContext.Instance().PostMessageSimulator?.LongKeyPress(_assets.VkHitQTE, random.Next(500, 1000));
+        }
+        else
+        {
+            if (SystemControl.IsGameActive())
+            {
+                Simulation.SendInput.Keyboard.KeyPress(_assets.VkHitQTE);
+            }
+        }
+
         _logger.LogInformation("自动校准触发按键{Key}", _assets.VkHitQTE);
     }
 
