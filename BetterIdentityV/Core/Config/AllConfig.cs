@@ -23,6 +23,12 @@ public partial class AllConfig : ObservableObject
     private int _triggerInterval = 50;
     
     /// <summary>
+    /// 自动修复Win11下BitBlt截图方式不可用的问题
+    /// </summary>
+    [ObservableProperty]
+    private bool _autoFixWin11BitBlt = true;
+    
+    /// <summary>
     /// 遮罩窗口配置
     /// </summary>
     public MaskWindowConfig MaskWindowConfig { get; set; } = new();

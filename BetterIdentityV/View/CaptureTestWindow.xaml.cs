@@ -5,6 +5,7 @@ using System.Windows.Media.Imaging;
 using BetterIdentityV.GameCapture;
 using BetterIdentityV.GameTask;
 using BetterIdentityV.Helpers.Extensions;
+using BetterIdentityV.Helpers.Win32;
 using Wpf.Ui.Violeta.Controls;
 using Size = OpenCvSharp.Size;
 
@@ -49,7 +50,7 @@ public partial class CaptureTestWindow : Window
         _capture.Start(hWnd,
             new Dictionary<string, object>()
             {
-                { "autoFixWin11BitBlt", true },
+                { "autoFixWin11BitBlt", OsVersionHelper.IsWindows11 && TaskContext.Instance().Config.AutoFixWin11BitBlt },
                 { "captureAreaHandle", captureAreaHandle }
             }
         );

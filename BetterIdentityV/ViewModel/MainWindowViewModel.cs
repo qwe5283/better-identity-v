@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Windows;
 using BetterIdentityV.Core.Config;
+using BetterIdentityV.GameCapture.BitBlt;
+using BetterIdentityV.GameTask;
 using BetterIdentityV.Helpers.Ui;
+using BetterIdentityV.Helpers.Win32;
 using BetterIdentityV.Service.Interface;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -83,6 +86,12 @@ public partial class MainWindowViewModel : ObservableObject
     {
         // 应用上次保存的主题
         ApplyTheme(Config.CommonConfig.CurrentColorTheme);
+        
+        //  Win11下 BitBlt截图方式不可用，需要关闭窗口优化功能
+        if (OsVersionHelper.IsWindows11_OrGreater && TaskContext.Instance().Config.AutoFixWin11BitBlt)
+        {
+            BitBltRegistryHelper.SetDirectXUserGlobalSettings();
+        }
     }
     
     [RelayCommand]

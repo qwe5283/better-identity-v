@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using BetterIdentityV.GameCapture;
+using BetterIdentityV.Helpers.Win32;
 using BetterIdentityV.View;
 using Microsoft.Extensions.Logging;
 using Vanara.PInvoke;
@@ -89,6 +90,7 @@ public class TaskTriggerDispatcher : IDisposable
         GameCapture.Start(hWnd, 
             new Dictionary<string, object>()
             {
+                { "autoFixWin11BitBlt", OsVersionHelper.IsWindows11_OrGreater && TaskContext.Instance().Config.AutoFixWin11BitBlt },
                 { "captureAreaHandle", captureAreaHandle }
             });
         

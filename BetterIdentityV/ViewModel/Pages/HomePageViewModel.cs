@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interop;
+using Windows.System;
 using BetterIdentityV.Core.Config;
 using BetterIdentityV.Helpers;
 using BetterIdentityV.Model;
@@ -144,6 +145,12 @@ public partial class HomePageViewModel : ViewModel
                 MessageBox.Error("选择的窗体句柄为空！");
             }
         }
+    }
+    
+    [RelayCommand]
+    private async Task OpenDisplayAdvancedGraphicsSettingsAsync()
+    {
+        await Launcher.LaunchUriAsync(new Uri("ms-settings:display-advancedgraphics"));
     }
     
     private bool CanStopTrigger() => StopButtonEnabled;
