@@ -53,6 +53,27 @@ public class PostMessageSimulator
     }
 
     public static int MakeLParam(int x, int y) => (y << 16) | (x & 0xFFFF);
+    
+    public static nint MakeLParam(User32.VK vk, bool keyDown)
+    {
+        uint scanCode = User32.MapVirtualKey((uint)vk, User32.MAPVK.MAPVK_VK_TO_VSC);
+        
+        // lParam
+        // Bit 0-15:  Repeat Count (1)
+        // Bit 16-23: Scan Code
+        // Bit 24:    Extended Key Flag (0 for standard keys)
+        // Bit 25-28: Reserved (0)
+        // Bit 29:    Context Code (0)
+        // Bit 30:    Previous Key State (0 for down, 1 for up)
+        // Bit 31:    Transition State (0 for down, 1 for up)
+        
+        // 0xC0 = Previous State(1) + Transition(1)
+        return keyDown ? (nint)(0x00000001 | (scanCode << 16)) : (nint)(0xC0000001 | (scanCode << 16));
+    }
+
+    public static nint MakeLParamKeyDown(User32.VK vk) => MakeLParam(vk, true);
+    
+    public static nint MakeLParamKeyUp(User32.VK vk) => MakeLParam(vk, false);
 
     public PostMessageSimulator LeftButtonClick()
     {
@@ -118,51 +139,38 @@ public class PostMessageSimulator
         return this;
     }
 
-    public PostMessageSimulator KeyPress(User32.VK vk)
-    {
-        //User32.PostMessage(_hWnd, User32.WindowMessage.WM_ACTIVATE, 1, 0);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYDOWN, (nint)vk, 0x1e0001);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_CHAR, (nint)vk, 0x1e0001);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYUP, (nint)vk, unchecked((nint)0xc01e0001));
-        return this;
-    }
+    public PostMessageSimulator KeyPress(User32.VK vk) => LongKeyPress(vk, 0);
 
-    public PostMessageSimulator KeyPress(User32.VK vk, int ms)
+    public PostMessageSimulator LongKeyPress(User32.VK vk, int ms)
     {
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYDOWN, (nint)vk, 0x1e0001);
-        Thread.Sleep(ms);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_CHAR, (nint)vk, 0x1e0001);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYUP, (nint)vk, unchecked((nint)0xc01e0001));
-        return this;
-    }
-
-    public PostMessageSimulator LongKeyPress(User32.VK vk)
-    {
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYDOWN, (nint)vk, 0x1e0001);
-        Thread.Sleep(1000);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_CHAR, (nint)vk, 0x1e0001);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYUP, (nint)vk, unchecked((nint)0xc01e0001));
+        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYDOWN, (nint)vk, MakeLParamKeyDown(vk));
+        User32.PostMessage(_hWnd, User32.WindowMessage.WM_CHAR, (nint)vk, MakeLParamKeyDown(vk));
+        if (ms > 0) Thread.Sleep(ms);
+        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYUP, (nint)vk, MakeLParamKeyUp(vk));
         return this;
     }
 
     public PostMessageSimulator KeyDown(User32.VK vk)
     {
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYDOWN, (nint)vk, 0x1e0001);
+        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYDOWN, (nint)vk, MakeLParamKeyDown(vk));
         return this;
     }
 
     public PostMessageSimulator KeyUp(User32.VK vk)
     {
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYUP, (nint)vk, unchecked((nint)0xc01e0001));
+        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYUP, (nint)vk, MakeLParamKeyUp(vk));
         return this;
     }
 
-    public PostMessageSimulator KeyPressBackground(User32.VK vk)
+    public PostMessageSimulator KeyPressBackground(User32.VK vk) => LongKeyPressBackground(vk, 0);
+    
+    public PostMessageSimulator LongKeyPressBackground(User32.VK vk, int ms)
     {
         User32.PostMessage(_hWnd, User32.WindowMessage.WM_ACTIVATE, 1, 0);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYDOWN, (nint)vk, 0x1e0001);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_CHAR, (nint)vk, 0x1e0001);
-        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYUP, (nint)vk, unchecked((nint)0xc01e0001));
+        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYDOWN, (nint)vk, MakeLParamKeyDown(vk));
+        User32.PostMessage(_hWnd, User32.WindowMessage.WM_CHAR, (nint)vk, MakeLParamKeyDown(vk));
+        if (ms > 0) Thread.Sleep(ms);
+        User32.PostMessage(_hWnd, User32.WindowMessage.WM_KEYUP, (nint)vk, MakeLParamKeyUp(vk));
         return this;
     }
 
