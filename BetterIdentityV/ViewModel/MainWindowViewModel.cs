@@ -3,6 +3,7 @@ using System.Windows;
 using BetterIdentityV.Core.Config;
 using BetterIdentityV.GameCapture.BitBlt;
 using BetterIdentityV.GameTask;
+using BetterIdentityV.Helpers;
 using BetterIdentityV.Helpers.Ui;
 using BetterIdentityV.Helpers.Win32;
 using BetterIdentityV.Service.Interface;
@@ -17,8 +18,17 @@ namespace BetterIdentityV.ViewModel;
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly IConfigService _configService;
-    public string Title => $"BetterIDV · 更好的第五人格 · {Global.Version}";
-    
+
+    public string Title
+    {
+        get
+        {
+            if (RuntimeHelper.IsElevated)
+                return $"BetterIDV · 更好的第五人格 · {Global.Version}";
+            return $"BetterIDV · 更好的第五人格 · (标准用户) · {Global.Version}";
+        }
+    }
+
     [ObservableProperty] private bool _isVisible = true;
     
     [ObservableProperty] private WindowBackdropType _currentBackdropType = WindowBackdropType.Auto;

@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Threading;
 using BetterIdentityV.GameTask;
+using BetterIdentityV.Helpers;
 using BetterIdentityV.Service;
 using BetterIdentityV.Service.Interface;
 using BetterIdentityV.View.Pages;
@@ -22,6 +23,7 @@ namespace BetterIdentityV;
 public partial class App : Application
 {
     private static readonly IHost _host = Host.CreateDefaultBuilder()
+        .UseElevated()
         .ConfigureServices(services => // 配置依赖注入容器
             {
                 // 提前初始化配置
