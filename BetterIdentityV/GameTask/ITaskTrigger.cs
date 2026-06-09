@@ -21,6 +21,11 @@ public interface ITaskTrigger
     bool IsEnabled { get; set; }
 
     /// <summary>
+    /// 当前是否处于健康状态
+    /// </summary>
+    bool IsHealthy => true;
+
+    /// <summary>
     /// 执行优先级，越大越先执行
     /// </summary>
     int Priority { get; }

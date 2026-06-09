@@ -143,11 +143,22 @@
                                                Text="{Binding Name}">
                                         <TextBlock.Style>
                                             <Style TargetType="{x:Type TextBlock}">
-                                                <Setter Property="Foreground" Value="White" />
+                                                <Setter Property="Foreground" Value="LightGray" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding IsEnabled}" Value="True" />
+                                                            <Condition Binding="{Binding IsHealthy}" Value="True" />
+                                                        </MultiDataTrigger.Conditions>
                                                         <Setter Property="Foreground" Value="LightGreen" />
-                                                    </DataTrigger>
+                                                    </MultiDataTrigger>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding IsEnabled}" Value="True" />
+                                                            <Condition Binding="{Binding IsHealthy}" Value="False" />
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter Property="Foreground" Value="IndianRed" />
+                                                    </MultiDataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </TextBlock.Style>

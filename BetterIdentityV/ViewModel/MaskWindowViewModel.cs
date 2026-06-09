@@ -1,6 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows;
 using BetterIdentityV.Core.Config;
+using BetterIdentityV.GameTask;
 using BetterIdentityV.Helpers;
 using BetterIdentityV.Model;
 using BetterIdentityV.Service.Interface;
@@ -28,23 +29,40 @@ public partial class MaskWindowViewModel : ObservableRecipient
             {
                 UIDispatcherHelper.Invoke(RefreshSettings);
             }
+            else if (msg.PropertyName == "RefreshStatusList")
+            {
+                UIDispatcherHelper.Invoke(RefreshStatusList);
+            }
         });
     }
     
     private void InitializeStatusList()
     {
+        InitConfig();
         if (Config != null)
         {
-            StatusList.Add(new StatusItem("\u26a1 校准", Config.AutoQTEConfig));
-            StatusList.Add(new StatusItem("\uf256 拾取", Config.AutoPickConfig));
+            ClearStatusList();
+            var triggers = GameTaskManager.TriggerDictionary;
+            StatusList.Add(new StatusItem("\u26a1 校准", Config.AutoQTEConfig, "Enabled", triggers?.GetValueOrDefault("AutoQTE")));
+            StatusList.Add(new StatusItem("\uf256 拾取", Config.AutoPickConfig, "Enabled", triggers?.GetValueOrDefault("AutoPick")));
         }
+    }
+
+    private void ClearStatusList()
+    {
+        foreach (var item in StatusList)
+        {
+            item.Dispose();
+        }
+
+        StatusList.Clear();
     }
     
     [RelayCommand]
     private void OnLoaded()
     {
         RefreshSettings();
-        InitializeStatusList();
+        RefreshStatusList();
     }
     
     private void RefreshSettings()
@@ -54,6 +72,12 @@ public partial class MaskWindowViewModel : ObservableRecipient
         {
             OnPropertyChanged(nameof(Config));
         }
+    }
+
+    private void RefreshStatusList()
+    {
+        RefreshSettings();
+        InitializeStatusList();
     }
     
     /// <summary>

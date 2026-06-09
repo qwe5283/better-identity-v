@@ -2,6 +2,8 @@
 using BetterIdentityV.GameCapture;
 using BetterIdentityV.Helpers.Win32;
 using BetterIdentityV.View;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using Microsoft.Extensions.Logging;
 using Vanara.PInvoke;
 
@@ -85,6 +87,8 @@ public class TaskTriggerDispatcher : IDisposable
         
         // 初始化触发器(一定要在任务上下文初始化完毕后使用)
         _triggers = GameTaskManager.LoadInitialTriggers();
+        WeakReferenceMessenger.Default.Send(
+            new PropertyChangedMessage<object>(this, "RefreshStatusList", new object(), new object()));
         
         // 启动截图
         GameCapture.Start(hWnd, 
