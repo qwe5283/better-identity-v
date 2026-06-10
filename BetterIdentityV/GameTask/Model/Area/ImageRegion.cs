@@ -107,6 +107,7 @@ public class ImageRegion : Region
                     TaskControl.Logger.LogError("在图像{W1}x{H1}中查找模板,名称：{Name},ROI位置{X2}x{Y2},区域{H2}x{W2},边界溢出！",
                         roi.Width, roi.Height, ro.Name, ro.RegionOfInterest.X, ro.RegionOfInterest.Y,
                         ro.RegionOfInterest.Width, ro.RegionOfInterest.Height);
+                    return new Region();
                 }
 
                 roi = new Mat(roi, ro.RegionOfInterest);

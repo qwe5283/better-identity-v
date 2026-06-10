@@ -39,6 +39,8 @@ public partial class AutoPickTrigger : ObservableObject, ITaskTrigger
 
     public void OnCapture(CaptureContent content)
     {
+        if (!IsHealthy) return;
+        
         SpeedTimer speedTimer = new SpeedTimer();
         
         _pickPrimaryItem = IdentifySlotItem(content, _assets.PickPrimarySlotItemTemplates);

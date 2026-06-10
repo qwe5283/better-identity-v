@@ -71,6 +71,9 @@ public class TaskTriggerDispatcher : IDisposable
 
     public void Start(IntPtr hWnd, CaptureModes mode, int interval = 50)
     {
+        // 窗口已关闭则不启动
+        if (!User32.IsWindow(hWnd)) return;
+
         // 重新启动截图器前先停止旧触发器，避免自管线程类触发器残留。
         _timer.Stop();
         StopTriggers();

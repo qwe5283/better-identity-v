@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Windows.Foundation.Metadata;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX;
@@ -123,7 +124,16 @@ public class GraphicsCapture(bool captureHdr = false) : IGameCapture
         }
 
         _frameTimer.Start();
-        _captureSession.StartCapture();
+        try
+        {
+            _captureSession.StartCapture();
+        }
+        catch (COMException)
+        {
+            // 窗口已关闭或状态无效，无法启动捕获
+            Stop();
+            return;
+        }
         IsCapturing = true;
     }
 
@@ -196,7 +206,7 @@ public class GraphicsCapture(bool captureHdr = false) : IGameCapture
         _frameAccessLock.EnterWriteLock();
         try
         {
-            if (_hWnd == 0)
+            if (_hWnd == 0 || !IsCapturing)
             {
                 return;
             }
@@ -221,8 +231,14 @@ public class GraphicsCapture(bool captureHdr = false) : IGameCapture
             {
                 if (User32.IsIconic(_hWnd))
                     return;
+                
+                if (captureSize.Width <= 0 || captureSize.Height <= 0)
+                    return;
 
-                _captureFramePool!.Recreate(
+                if (_captureFramePool == null || _d3dDevice == null)
+                    return;
+                
+                _captureFramePool.Recreate(
                     _d3dDevice,
                     _pixelFormat,
                     2,
