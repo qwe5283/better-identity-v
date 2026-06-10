@@ -7,10 +7,12 @@ using BetterIdentityV.Helpers;
 using BetterIdentityV.Model;
 using BetterIdentityV.GameCapture;
 using BetterIdentityV.GameTask;
+using BetterIdentityV.GameTask.Common;
 using BetterIdentityV.Service.Interface;
 using BetterIdentityV.View;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using MessageBox = Wpf.Ui.Violeta.Controls.MessageBox;
 
 namespace BetterIdentityV.ViewModel.Pages;
@@ -62,6 +64,7 @@ public partial class HomePageViewModel : ViewModel
         }
 
         Start(hWnd);
+        AskAdjustGameWindowSize(hWnd);
     }
 
     private void Start(IntPtr hWnd)
@@ -139,6 +142,7 @@ public partial class HomePageViewModel : ViewModel
             {
                 _hWnd = hWnd;
                 Start(hWnd);
+                AskAdjustGameWindowSize(hWnd);
             }
             else
             {
@@ -193,6 +197,42 @@ public partial class HomePageViewModel : ViewModel
     private void OnUiTaskStartTick(object? sender, EventArgs e)
     {
         UIDispatcherHelper.Invoke(() => Start(_hWnd));
+    }
+
+    private void AskAdjustGameWindowSize(IntPtr hWnd)
+    {
+        var info = TaskContext.Instance().SystemInfo;
+        if (!info.IsGameRatio16_9 && !info.IsGameFullscreenMode && info.GameProcessName != "MuMuNxDevice")
+        {
+            int w, h;
+            Application.Current.MainWindow?.Activate();
+            MessageBoxResult result = MessageBox.Question("自动调整游戏窗口以适应16:9分辨率？");
+            if (result.Equals(MessageBoxResult.Yes))
+            {
+                SystemControl.ActivateWindow(hWnd);
+                var size = SystemControl.RestoreWindowGetSize(hWnd);
+                if (size.Width * 9 < size.Height * 16)
+                {
+                    // 缩短height
+                    w = size.Width;
+                    h = size.Width * 9 / 16;
+                }
+                else
+                {
+                    // 缩短width
+                    w = size.Height * 16 / 9;
+                    h = size.Height;
+                }
+                SystemControl.ResizeWindowClientRect(hWnd, w, h);
+                Stop();
+                Start(hWnd);
+                TaskControl.Logger.LogInformation("已经帮你自动调整了游戏窗口尺寸并重启截图器");
+            }
+            else
+            {
+                SystemControl.ActivateWindow(hWnd);
+            }
+        }
     }
 
 }

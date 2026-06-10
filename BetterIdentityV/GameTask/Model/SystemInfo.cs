@@ -65,6 +65,12 @@ public class SystemInfo : ISystemInfo
     /// </summary>
     public bool IsGameRatio16_9 => Math.Abs(GameScreenSize.Width * 9 - GameScreenSize.Height * 16) <= 16;
 
+    /// <summary>
+    /// 检查游戏是否处于全屏模式
+    /// </summary>
+    public bool IsGameFullscreenMode =>
+        DisplaySize.Width == GameScreenSize.Width && DisplaySize.Height == GameScreenSize.Height;
+
     public SystemInfo(IntPtr hWnd, IntPtr captureAreaHandle)
     {
         var p = SystemControl.GetProcessByHandle(hWnd);

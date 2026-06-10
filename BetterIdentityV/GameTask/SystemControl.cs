@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Drawing;
 using Vanara.PInvoke;
 
 namespace BetterIdentityV.GameTask;
@@ -153,6 +154,39 @@ public class SystemControl
             User32.ShowWindow(hWnd, ShowWindowCommand.SW_RESTORE);
         }
         User32.SetForegroundWindow(hWnd);
+    }
+
+    /// <summary>
+    /// 确保最大化窗口还原回窗口化，返回客户区大小
+    /// </summary>
+    /// <param name="hWnd">窗口</param>
+    /// <returns>还原后客户区大小</returns>
+    public static Size RestoreWindowGetSize(nint hWnd)
+    {
+        if (User32.IsZoomed(hWnd))
+        {
+            User32.ShowWindow(hWnd, ShowWindowCommand.SW_RESTORE);
+            Thread.Sleep(500);
+        }
+        User32.GetClientRect(hWnd, out var clientRect);
+        return new Size(clientRect.Width, clientRect.Height);
+    }
+    
+    public static void ResizeWindowClientRect(nint hWnd, int clientWidth, int clientHeight)
+    {
+        if (hWnd == 0 || !User32.IsWindow(hWnd)) return;
+        
+        User32.GetWindowRect(hWnd, out var windowRect);
+        User32.GetClientRect(hWnd, out var clientRect);
+        // 计算边框和标题栏的尺寸
+        int borderWidth = windowRect.Width - clientRect.Width;
+        int borderHeight = windowRect.Height - clientRect.Height;
+        // 计算新的窗口尺寸（包含边框和标题栏）
+        int newWindowWidth = clientWidth + borderWidth;
+        int newWindowHeight = clientHeight + borderHeight;
+        // 调整窗口大小，保持位置不变
+        User32.SetWindowPos(hWnd, IntPtr.Zero, windowRect.Left, windowRect.Top,
+            newWindowWidth, newWindowHeight, User32.SetWindowPosFlags.SWP_NOZORDER);
     }
     
 }
