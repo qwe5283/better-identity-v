@@ -289,7 +289,7 @@ public class TaskTriggerDispatcher : IDisposable
             if ((Math.Abs(_gameRect.Width - currentRect.Width) > 1 || Math.Abs(_gameRect.Height - currentRect.Height) > 1)
                 && !SizeIsZero(_gameRect) && !SizeIsZero(currentRect))
             {
-                _logger.LogError("► 游戏窗口大小发生变化 {W}x{H}->{CW}x{CH}, 自动重启截图器中...", _gameRect.Width, _gameRect.Height, currentRect.Width, currentRect.Height);
+                _logger.LogError("► 窗口大小变化 {W}x{H}->{CW}x{CH}, 自动重启截图器中...", _gameRect.Width, _gameRect.Height, currentRect.Width, currentRect.Height);
                 UiTaskStopTickEvent?.Invoke(null, EventArgs.Empty);
                 UiTaskStartTickEvent?.Invoke(null, EventArgs.Empty);
                 _logger.LogInformation("► 游戏窗口大小发生变化，截图器重启完成！");

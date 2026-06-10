@@ -4,12 +4,13 @@ using BetterIdentityV.Core.Simulator;
 using BetterIdentityV.GameTask.AutoPick.Assets;
 using BetterIdentityV.GameTask.Model.Area;
 using BetterIdentityV.Helpers;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 
 namespace BetterIdentityV.GameTask.AutoPick;
 
-public class AutoPickTrigger : ITaskTrigger
+public partial class AutoPickTrigger : ObservableObject, ITaskTrigger 
 {
     private readonly ILogger<AutoPickTrigger> _logger = App.GetLogger<AutoPickTrigger>();
     
@@ -20,6 +21,7 @@ public class AutoPickTrigger : ITaskTrigger
     
     private readonly AutoPickAssets _assets = AutoPickAssets.Instance;
     private TimeSpan _coolDownInterval = TimeSpan.FromSeconds(3);
+    [ObservableProperty] private bool _isHealthy = true;
 
     private PickableItemType? _pickPrimaryItem, _pickSecondaryItem, _currentPrimaryItem, _currentSecondaryItem;
 
@@ -30,6 +32,9 @@ public class AutoPickTrigger : ITaskTrigger
         var config = TaskContext.Instance().Config.AutoPickConfig;
         IsEnabled = config.Enabled;
         _coolDownInterval = TimeSpan.FromSeconds(config.CooldownTime);
+        // 分辨率检查
+        var systemInfo = TaskContext.Instance().SystemInfo;
+        IsHealthy = systemInfo.IsGameRatio16_9;
     }
 
     public void OnCapture(CaptureContent content)
