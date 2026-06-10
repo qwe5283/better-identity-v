@@ -83,7 +83,7 @@ public partial class HomePageViewModel : ViewModel
                 if (!TaskDispatcherEnabled)
                 {
                     _hWnd = hWnd;
-                    _taskDispatcher.Start(hWnd, GetCaptureMode(), Config.TriggerInterval);
+                    _taskDispatcher.Start(hWnd, GetCaptureMode(hWnd), Config.TriggerInterval);
                     _taskDispatcher.UiTaskStopTickEvent -= OnUiTaskStopTick;
                     _taskDispatcher.UiTaskStartTickEvent -= OnUiTaskStartTick;
                     _taskDispatcher.UiTaskStopTickEvent += OnUiTaskStopTick;
@@ -104,9 +104,9 @@ public partial class HomePageViewModel : ViewModel
         }
     }
     
-    private CaptureModes GetCaptureMode()
+    private CaptureModes GetCaptureMode(IntPtr hWnd)
     {
-        return Config.CaptureMode.ToCaptureMode();
+       return  SystemControl.GetAutoCaptureMode(hWnd, Config.CaptureMode.ToCaptureMode());
     }
 
     /// <summary>
@@ -122,7 +122,8 @@ public partial class HomePageViewModel : ViewModel
             if (hWnd != IntPtr.Zero)
             {
                 var captureWindow = new CaptureTestWindow();
-                captureWindow.StartCapture(hWnd, Config.CaptureMode.ToCaptureMode());
+                var mode = Config.CaptureMode.ToCaptureMode();
+                captureWindow.StartCapture(hWnd, SystemControl.GetAutoCaptureMode(hWnd, mode));
                 captureWindow.Show();
             }
             else

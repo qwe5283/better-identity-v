@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
+using BetterIdentityV.GameCapture;
 using Vanara.PInvoke;
 
 namespace BetterIdentityV.GameTask;
@@ -187,6 +188,20 @@ public class SystemControl
         // 调整窗口大小，保持位置不变
         User32.SetWindowPos(hWnd, IntPtr.Zero, windowRect.Left, windowRect.Top,
             newWindowWidth, newWindowHeight, User32.SetWindowPosFlags.SWP_NOZORDER);
+    }
+    
+    public static CaptureModes GetAutoCaptureMode(IntPtr hWnd, CaptureModes mode)
+    {
+        if (CaptureModes.Auto.Equals(mode))
+        {
+            string name = GetProcessByHandle(hWnd)!.ProcessName;
+            if (name == "MuMuNxDevice")
+                mode = CaptureModes.WindowsGraphicsCapture;
+            else
+                mode = CaptureModes.BitBlt;
+        }
+        Console.WriteLine("使用截图模式" + mode);
+        return mode;
     }
     
 }
