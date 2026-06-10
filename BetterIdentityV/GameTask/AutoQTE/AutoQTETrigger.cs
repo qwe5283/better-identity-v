@@ -185,7 +185,7 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable, INotifyPropertyChanged
                 
                 if (trackResult is { ShouldHit: true, HitTimeSec: not null })
                 {
-                    ExecuteHitAt(trackResult.HitTimeSec.Value, token);
+                    ExecuteHitAt(trackResult.HitTimeSec.Value, token, capture);
                 }
             }
             catch (OperationCanceledException)
@@ -201,7 +201,7 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable, INotifyPropertyChanged
         }
     }
     
-    private void ExecuteHitAt(double hitTimeSec, CancellationToken token)
+    private void ExecuteHitAt(double hitTimeSec, CancellationToken token, IGameCapture capture)
     {
         Random random = new Random();
         
@@ -227,7 +227,9 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable, INotifyPropertyChanged
                 Simulation.SendInput.Keyboard.KeyPress(_assets.VkHitQTE);
             }
         }
-
+#if DEBUG
+        Cv2.ImWrite("debug.png", capture.Capture());
+#endif
         _logger.LogInformation("自动校准触发按键{Key}", _assets.VkHitQTE);
     }
 
