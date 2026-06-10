@@ -105,7 +105,7 @@ public partial class MaskWindow : Window
         _logger.LogInformation("遮罩窗口已启动，游戏大小{Width}x{Height}，素材缩放{Scale}，DPI缩放{Dpi}",
             width, height, systemInfo.AssetScale.ToString("F"), dpiScale);
         
-        if (width * 9 != height * 16)
+        if (!systemInfo.IsGameRatio16_9)
         {
             _logger.LogError("当前游戏分辨率不是16:9，可能影响功能正常使用！");
         }

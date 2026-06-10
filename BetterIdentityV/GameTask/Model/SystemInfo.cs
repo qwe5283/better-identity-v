@@ -60,6 +60,11 @@ public class SystemInfo : ISystemInfo
     {
     }
 
+    /// <summary>
+    /// 检查游戏分辨率比例是否为16:9, 允许±1像素误差
+    /// </summary>
+    public bool IsGameRatio16_9 => Math.Abs(GameScreenSize.Width * 9 - GameScreenSize.Height * 16) <= 16;
+
     public SystemInfo(IntPtr hWnd, IntPtr captureAreaHandle)
     {
         var p = SystemControl.GetProcessByHandle(hWnd);

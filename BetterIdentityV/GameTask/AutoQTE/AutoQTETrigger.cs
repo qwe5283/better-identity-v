@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using BetterIdentityV.Core.Simulator;
 using BetterIdentityV.GameCapture;
 using BetterIdentityV.GameTask.AutoQTE.Core;
@@ -8,7 +9,7 @@ using OpenCvSharp;
 
 namespace BetterIdentityV.GameTask.AutoQTE;
 
-public class AutoQTETrigger : ITaskTrigger, IDisposable
+public class AutoQTETrigger : ITaskTrigger, IDisposable, INotifyPropertyChanged
 {
     private readonly ILogger<AutoQTETrigger> _logger = App.GetLogger<AutoQTETrigger>();
     private readonly object _loopLock = new();
@@ -21,6 +22,9 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable
     private CancellationTokenSource? _workerCts;
     private double _delayCompSec;
     private bool _backgroundOperation;
+    private bool _isHealthy = true;
+    
+    public event PropertyChangedEventHandler? PropertyChanged;
     
     public string Name => "自动QTE校准";
 
@@ -54,6 +58,20 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable
         _delayCompSec = Math.Max(0d, config.SystemDelayMs) / 1000d;
         IsEnabled = config.Enabled;
         _backgroundOperation = config.RunBackgroundEnabled;
+        // 分辨率检查
+        var systemInfo = TaskContext.Instance().SystemInfo;
+        IsHealthy = systemInfo.IsGameRatio16_9;
+    }
+    
+    public bool IsHealthy
+    {
+        get => _isHealthy;
+        set
+        {
+            if (_isHealthy == value) return;
+            _isHealthy = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHealthy)));
+        }
     }
 
     public void OnCapture(CaptureContent content)
