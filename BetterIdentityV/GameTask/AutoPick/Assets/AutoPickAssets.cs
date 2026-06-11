@@ -1,5 +1,6 @@
 ﻿using BetterIdentityV.Core.Recognition;
 using BetterIdentityV.GameTask.Model;
+using BetterIdentityV.Helpers;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using Vanara.PInvoke;
@@ -20,6 +21,31 @@ public class AutoPickAssets : BaseAssets<AutoPickAssets>
 
     private AutoPickAssets()
     {
+        // 按键绑定
+        var primaryKeyName = TaskContext.Instance().Config.AutoPickConfig.PrimaryPickKey;
+        var secondaryKeyName = TaskContext.Instance().Config.AutoPickConfig.SecondaryPickKey;
+        if (!string.IsNullOrEmpty(primaryKeyName) && !string.IsNullOrEmpty(secondaryKeyName))
+        {
+            try
+            {
+                PickToPrimarySlotVk = User32Helper.ToVk(primaryKeyName.ToUpper());
+                PickToSecondarySlotVk = User32Helper.ToVk(secondaryKeyName.ToUpper());
+            }
+            catch (Exception e)
+            {
+                _logger.LogDebug(e, "加载自定义拾取按键时发生异常");
+                _logger.LogError("加载自定义拾取按键失败，继续使用默认的1键2键");
+                TaskContext.Instance().Config.AutoPickConfig.PrimaryPickKey = "1";
+                TaskContext.Instance().Config.AutoPickConfig.SecondaryPickKey = "2";
+                return;
+            }
+            
+            if (primaryKeyName != "1" || secondaryKeyName != "2")
+            {
+                _logger.LogInformation("自定义1号位拾取按键：{Key1}，2号位拾取按键：{Key2}", primaryKeyName, secondaryKeyName);
+            }
+        }
+        
         // 图标矩形ROI区域
         var pickablePrimaryItemRect = new Rect((int)(1703 * AssetScale), (int)(783 * AssetScale),
             (int)(128 * AssetScale), (int)(128 * AssetScale));
