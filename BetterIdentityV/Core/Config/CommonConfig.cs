@@ -22,7 +22,12 @@ public partial class CommonConfig : ObservableObject
     private bool _exitToTray;
     
     /// <summary>
+    /// 使用透明亚克力材质作背景
+    /// </summary>
+    [ObservableProperty] private bool _useAcrylicBackdrop = true;
+    
+    /// <summary>
     /// 当前色彩主题
     /// </summary>
-    [ObservableProperty] private ThemeType _currentColorTheme = ThemeType.DarkNone;
+    [ObservableProperty] private ThemeType _currentThemeType = ThemeType.DarkNone;
 }

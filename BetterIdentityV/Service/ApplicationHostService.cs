@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using BetterIdentityV.View;
 using BetterIdentityV.View.Pages;
 using Microsoft.Extensions.Hosting;
 using Wpf.Ui;

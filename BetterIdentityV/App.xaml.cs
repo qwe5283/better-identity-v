@@ -5,6 +5,7 @@ using BetterIdentityV.GameTask;
 using BetterIdentityV.Helpers;
 using BetterIdentityV.Service;
 using BetterIdentityV.Service.Interface;
+using BetterIdentityV.View;
 using BetterIdentityV.View.Pages;
 using BetterIdentityV.ViewModel;
 using BetterIdentityV.ViewModel.Pages;
@@ -24,6 +25,7 @@ public partial class App : Application
 {
     private static readonly IHost _host = Host.CreateDefaultBuilder()
         .UseElevated()
+        .ConfigureLogging(builder => { builder.ClearProviders(); })
         .ConfigureServices(services => // 配置依赖注入容器
             {
                 // 提前初始化配置

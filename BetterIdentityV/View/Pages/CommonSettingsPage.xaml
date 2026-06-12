@@ -21,7 +21,30 @@
         <ui:TextBlock Margin="0,0,0,8"
                       FontTypography="BodyStrong"
                       Text="软件设置" />
-        <!-- Cards -->
+        <!-- 透明背景 -->
+        <ui:CardControl Margin="0,0,0,12"
+                        Icon="{ui:SymbolIcon Blur24}">
+            <ui:CardControl.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="透明背景"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="使用透明的亚克力材质作为软件背景"
+                                  TextWrapping="Wrap" />
+                </Grid>
+            </ui:CardControl.Header>
+            <ui:ToggleSwitch Margin="0,0,40,0" IsChecked="{Binding UseAcrylicBackdropProxy, Mode=TwoWay}" />
+        </ui:CardControl>
+        <!-- 遮罩窗口 -->
         <ui:CardExpander Margin="0, 0, 0, 12"
                          ContentPadding="0"
                          Icon="{ui:SymbolIcon SquareHintSparkles24}">

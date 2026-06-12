@@ -1,5 +1,6 @@
 ﻿using System.Windows.Media;
 using BetterIdentityV.Core.Config;
+using BetterIdentityV.GameTask;
 using Wpf.Ui.Controls;
 
 namespace BetterIdentityV.Helpers.Ui;
@@ -8,7 +9,8 @@ public class WindowHelper
 {
     public static void TryApplySystemBackdrop(System.Windows.Window window)
     {
-        // TODO: TryApplySystemBackdrop
+        var themeType = TaskContext.Instance().Config.CommonConfig.CurrentThemeType;
+        ApplyThemeToWindow(window, themeType);
     }
     
     /// <summary>

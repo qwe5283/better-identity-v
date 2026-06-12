@@ -8,6 +8,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using BetterIdentityV.Helpers.DpiAwareness;
+using BetterIdentityV.Helpers.Ui;
 using BetterIdentityV.ViewModel;
 using Microsoft.Extensions.Logging;
 using Wpf.Ui;
@@ -15,7 +17,7 @@ using Wpf.Ui.Abstractions;
 using Wpf.Ui.Controls;
 using Wpf.Ui.Tray.Controls;
 
-namespace BetterIdentityV;
+namespace BetterIdentityV.View;
 
 public partial class MainWindow : INavigationWindow
 {
@@ -25,15 +27,23 @@ public partial class MainWindow : INavigationWindow
     
     public MainWindow(MainWindowViewModel viewModel, INavigationService navigationService)
     {
+        _logger.LogDebug("主窗体实例化");
         DataContext = ViewModel = viewModel;
         
         InitializeComponent();
+        //this.InitializeDpiAwareness();
         
         navigationService.SetNavigationControl(RootNavigation);
         
         Application.Current.MainWindow = this;
         
         Loaded += (s, e) => Activate();
+    }
+    
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        WindowHelper.TryApplySystemBackdrop(this);
     }
     
     protected override void OnClosed(EventArgs e)
