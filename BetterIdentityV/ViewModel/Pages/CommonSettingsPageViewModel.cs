@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using BetterIdentityV.Core.Config;
 using BetterIdentityV.Helpers.Ui;
+using BetterIdentityV.Model;
 using BetterIdentityV.Service.Interface;
 using BetterIdentityV.View.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -41,6 +42,16 @@ public partial class CommonSettingsPageViewModel : ViewModel
         var aboutWindow = new AboutWindow();
         aboutWindow.Owner = Application.Current.MainWindow;
         aboutWindow.ShowDialog();
+    }
+    
+    [RelayCommand]
+    private async Task CheckUpdateAsync()
+    {
+        await App.GetService<IUpdateService>()!.CheckUpdateAsync(new UpdateOption
+        {
+            Trigger = UpdateTrigger.Manual,
+            Channel = UpdateChannel.Stable
+        });
     }
 
     partial void OnUseAcrylicBackdropProxyChanged(bool value)

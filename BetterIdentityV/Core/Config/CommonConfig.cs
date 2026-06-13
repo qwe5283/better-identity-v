@@ -29,5 +29,5 @@ public partial class CommonConfig : ObservableObject
     /// <summary>
     /// 当前色彩主题
     /// </summary>
-    [ObservableProperty] private ThemeType _currentThemeType = ThemeType.DarkNone;
+    [ObservableProperty] private ThemeType _currentThemeType = ThemeType.DarkAcrylic;
 }

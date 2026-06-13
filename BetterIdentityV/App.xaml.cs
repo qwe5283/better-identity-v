@@ -63,6 +63,7 @@ public partial class App : Application
                 services.AddHostedService<ApplicationHostService>(); // 注册托管服务
                 // Page resolver service
                 services.AddSingleton<INavigationService, NavigationService>();
+                services.AddSingleton<IUpdateService, UpdateService>();
                 
                 // MainWindow
                 services.AddSingleton<INavigationWindow, MainWindow>(); // 注册为单例的实现
