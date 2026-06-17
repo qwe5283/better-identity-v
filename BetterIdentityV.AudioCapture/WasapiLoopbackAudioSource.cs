@@ -112,7 +112,7 @@ public sealed class WasapiLoopbackAudioSource : IAudioSource
             var samples = AudioSampleConverter.ToMonoFloat(bytes, read, sourceFormat);
             if (sourceFormat.SampleRate != _options.SampleRate)
             {
-                samples = AudioSampleConverter.ResampleLinear(samples, sourceFormat.SampleRate, _options.SampleRate);
+                samples = AudioSampleConverter.Resample(samples, sourceFormat.SampleRate, _options.SampleRate);
             }
 
             FrameCaptured?.Invoke(this, new AudioFrame(samples, _options.SampleRate, 1, DateTimeOffset.Now));

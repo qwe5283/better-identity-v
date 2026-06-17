@@ -25,7 +25,7 @@ public static class AudioSampleConverter
         return result;
     }
 
-    public static float[] ResampleLinear(float[] samples, int sourceRate, int targetRate)
+    public static float[] Resample(float[] samples, int sourceRate, int targetRate)
     {
         if (sourceRate == targetRate || samples.Length == 0)
         {
@@ -34,18 +34,57 @@ public static class AudioSampleConverter
 
         var targetLength = Math.Max(1, (int)Math.Round(samples.Length * (double)targetRate / sourceRate));
         var result = new float[targetLength];
-        var ratio = (samples.Length - 1d) / Math.Max(1, targetLength - 1);
+        var ratio = sourceRate / (double)targetRate;
+        var cutoff = Math.Min(1d, targetRate / (double)sourceRate) * 0.475d;
+        const int radius = 16;
 
         for (var i = 0; i < targetLength; i++)
         {
             var sourcePosition = i * ratio;
-            var left = (int)Math.Floor(sourcePosition);
-            var right = Math.Min(samples.Length - 1, left + 1);
-            var fraction = (float)(sourcePosition - left);
-            result[i] = samples[left] + (samples[right] - samples[left]) * fraction;
+            var center = (int)Math.Floor(sourcePosition);
+            var sum = 0d;
+            var weightSum = 0d;
+
+            for (var tap = center - radius + 1; tap <= center + radius; tap++)
+            {
+                if (tap < 0 || tap >= samples.Length)
+                {
+                    continue;
+                }
+
+                var x = sourcePosition - tap;
+                var window = HannWindow(x, radius);
+                var weight = 2d * cutoff * Sinc(2d * cutoff * x) * window;
+                sum += samples[tap] * weight;
+                weightSum += weight;
+            }
+
+            result[i] = Math.Abs(weightSum) <= 1e-12 ? 0f : (float)(sum / weightSum);
         }
 
         return result;
+    }
+
+    private static double Sinc(double x)
+    {
+        if (Math.Abs(x) <= 1e-12)
+        {
+            return 1d;
+        }
+
+        var pix = Math.PI * x;
+        return Math.Sin(pix) / pix;
+    }
+
+    private static double HannWindow(double distance, int radius)
+    {
+        var normalized = Math.Abs(distance) / radius;
+        if (normalized >= 1d)
+        {
+            return 0d;
+        }
+
+        return 0.5d + 0.5d * Math.Cos(Math.PI * normalized);
     }
 
     private static float ReadSample(byte[] buffer, int sampleIndex, WaveFormat waveFormat)

@@ -26,6 +26,6 @@ public static class WavSampleLoader
             }
         }
 
-        return AudioSampleConverter.ResampleLinear(source.ToArray(), sourceFormat.SampleRate, targetSampleRate);
+        return AudioSampleConverter.Resample(source.ToArray(), sourceFormat.SampleRate, targetSampleRate);
     }
 }

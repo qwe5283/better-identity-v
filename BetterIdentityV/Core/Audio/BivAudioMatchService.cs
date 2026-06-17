@@ -16,8 +16,6 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
 
         public required NormalizedCrossCorrelationMatcher Matcher { get; init; }
 
-        public required AudioPreprocessor StreamPreprocessor { get; init; }
-
         public float[] LastFrame { get; set; } = [];
 
         public bool PreviousFrameMatched { get; set; }
@@ -69,7 +67,6 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
             Pattern = pattern,
             Callback = onMatched,
             Matcher = new NormalizedCrossCorrelationMatcher(processedSample),
-            StreamPreprocessor = new AudioPreprocessor(pattern.SampleRate, pattern.HighPassCutoffHz),
         };
 
         lock (_locker)
@@ -181,12 +178,14 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
 
     private static void MatchEntry(MatcherEntry entry, AudioFrame frame)
     {
-        var currentFrame = entry.StreamPreprocessor.Process(frame.Samples);
+        var currentFrame = frame.Samples.ToArray();
         var combined = new float[entry.LastFrame.Length + currentFrame.Length];
         Array.Copy(entry.LastFrame, 0, combined, 0, entry.LastFrame.Length);
         Array.Copy(currentFrame, 0, combined, entry.LastFrame.Length, currentFrame.Length);
 
-        var score = entry.Matcher.Match(combined) * entry.Pattern.Ratio;
+        var streamPreprocessor = new AudioPreprocessor(entry.Pattern.SampleRate, entry.Pattern.HighPassCutoffHz);
+        var processedCombined = streamPreprocessor.Process(combined);
+        var score = entry.Matcher.Match(processedCombined) * entry.Pattern.Ratio;
         var matched = score >= entry.Pattern.Threshold;
         var cooldownElapsed = frame.Timestamp - entry.LastMatchedAt >= entry.Pattern.Cooldown;
 
