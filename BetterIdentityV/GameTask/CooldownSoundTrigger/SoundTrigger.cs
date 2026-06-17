@@ -28,7 +28,7 @@ public sealed class SoundTrigger : AudioTaskTriggerBase
     {
         return new AudioMatchPattern
         {
-            Name = "SoundTrigger",
+            Name = "刹那生灭",
             SamplePath = ResolveSamplePath(),
             Threshold = _assets.Threshold,
             Ratio = _assets.Ratio,

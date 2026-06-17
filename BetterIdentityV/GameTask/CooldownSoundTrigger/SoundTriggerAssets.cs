@@ -3,7 +3,7 @@
 public class SoundTriggerAssets
 {
     public string SampleFileName = "刹那生灭波形.wav";
-    public double Threshold = 0.1;
+    public double Threshold = 0.15;
     public double Ratio = 1.0;
     public bool AllowSuccessiveTrigger;
     public int CooldownMilliseconds = 300;

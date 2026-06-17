@@ -4,22 +4,35 @@ using System.IO;
 
 namespace BetterIdentityV.Core.Audio;
 
+/// <summary>
+/// 音频匹配服务，管理多个匹配模板的注册与生命周期，将系统音频帧分发给各模板进行NCC匹配。
+/// </summary>
 public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
 {
+    /// <summary>
+    /// 单个匹配模板的内部条目，保存匹配所需的所有状态。
+    /// </summary>
     private sealed class MatcherEntry
     {
+        /// <summary>唯一标识符。</summary>
         public Guid Id { get; init; }
 
+        /// <summary>匹配模板配置。</summary>
         public required AudioMatchPattern Pattern { get; init; }
 
+        /// <summary>命中时的回调。</summary>
         public required Action<AudioMatchResult> Callback { get; init; }
 
+        /// <summary>NCC匹配器实例。</summary>
         public required NormalizedCrossCorrelationMatcher Matcher { get; init; }
 
+        /// <summary>上一帧的音频样本，用于跨帧拼接匹配。</summary>
         public float[] LastFrame { get; set; } = [];
 
+        /// <summary>上一帧是否匹配成功，用于控制连续帧触发抑制。</summary>
         public bool PreviousFrameMatched { get; set; }
 
+        /// <summary>上一次命中触发的时间戳。</summary>
         public DateTimeOffset LastMatchedAt { get; set; } = DateTimeOffset.MinValue;
     }
 
@@ -30,18 +43,38 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
     private AudioStreamOptions? _streamOptions;
     private bool _disposed;
 
+    /// <summary>
+    /// 使用默认的WASAPI环回音频源创建服务实例。
+    /// </summary>
     public BivAudioMatchService() : this(new WasapiLoopbackAudioSource())
     {
     }
 
+    /// <summary>
+    /// 使用指定的音频源创建服务实例。
+    /// </summary>
+    /// <param name="audioSource">音频捕获源。</param>
     public BivAudioMatchService(IAudioSource audioSource)
     {
         _audioSource = audioSource;
         _audioSource.FrameCaptured += OnFrameCaptured;
     }
 
+    /// <summary>
+    /// 全局单例实例。
+    /// </summary>
     public static BivAudioMatchService Instance { get; } = new();
 
+    /// <summary>
+    /// 注册一个音频匹配模板，命中时通过回调通知。
+    /// </summary>
+    /// <param name="pattern">匹配模板配置。</param>
+    /// <param name="onMatched">命中时的回调。</param>
+    /// <returns>用于取消注册的订阅句柄。</returns>
+    /// <exception cref="ArgumentNullException">pattern 或 onMatched 为 null。</exception>
+    /// <exception cref="ArgumentException">模板名称或样本路径无效。</exception>
+    /// <exception cref="FileNotFoundException">样本文件不存在。</exception>
+    /// <exception cref="InvalidOperationException">当前已有不同参数的模板在监听。</exception>
     public AudioMatchSubscription Register(AudioMatchPattern pattern, Action<AudioMatchResult> onMatched)
     {
         ArgumentNullException.ThrowIfNull(pattern);
@@ -81,12 +114,21 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
         return new AudioMatchSubscription(() => Unregister(entry.Id));
     }
 
+    /// <summary>
+    /// 注册一个音频匹配模板，命中时通过 <see cref="IAudioMatchHandler"/> 通知。
+    /// </summary>
+    /// <param name="pattern">匹配模板配置。</param>
+    /// <param name="handler">命中时的处理器。</param>
+    /// <returns>用于取消注册的订阅句柄。</returns>
     public AudioMatchSubscription Register(AudioMatchPattern pattern, IAudioMatchHandler handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
         return Register(pattern, handler.OnAudioMatched);
     }
 
+    /// <summary>
+    /// 释放所有资源，停止音频捕获并清理全部注册模板。
+    /// </summary>
     public void Dispose()
     {
         lock (_locker)
@@ -104,6 +146,9 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
         }
     }
 
+    /// <summary>
+    /// 取消指定模板的注册，最后一个模板被移除时自动停止音频捕获。
+    /// </summary>
     private void Unregister(Guid id)
     {
         lock (_locker)
@@ -126,6 +171,9 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
         }
     }
 
+    /// <summary>
+    /// 如果音频源未启动则启动，确保有音频帧流入。
+    /// </summary>
     private void EnsureStarted(AudioMatchPattern pattern)
     {
         if (_audioSource.IsCapturing)
@@ -142,6 +190,10 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
         _audioSource.Start(_streamOptions);
     }
 
+    /// <summary>
+    /// 检查新注册的模板参数是否与已启动的音频流兼容。
+    /// </summary>
+    /// <exception cref="InvalidOperationException">当前不支持混用不同采样率或窗口的模板。</exception>
     private void EnsureCompatibleOptions(AudioMatchPattern pattern)
     {
         if (_streamOptions == null)
@@ -155,6 +207,9 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
         }
     }
 
+    /// <summary>
+    /// 音频帧到达时，分发给所有已注册的匹配条目。
+    /// </summary>
     private void OnFrameCaptured(object? sender, AudioFrame frame)
     {
         MatcherEntry[] entries;
@@ -176,6 +231,9 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
         }
     }
 
+    /// <summary>
+    /// 对单个匹配条目执行NCC匹配，包含帧拼接、预处理、阈值判决和触发抑制。
+    /// </summary>
     private static void MatchEntry(MatcherEntry entry, AudioFrame frame)
     {
         var currentFrame = frame.Samples.ToArray();
@@ -199,6 +257,9 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
         entry.LastFrame = currentFrame;
     }
 
+    /// <summary>
+    /// 检查服务是否已释放，已释放则抛出异常。
+    /// </summary>
     private void ThrowIfDisposed()
     {
         if (_disposed)

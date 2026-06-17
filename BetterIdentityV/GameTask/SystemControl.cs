@@ -200,7 +200,6 @@ public class SystemControl
             else
                 mode = CaptureModes.BitBlt;
         }
-        Console.WriteLine("使用截图模式" + mode);
         return mode;
     }
     

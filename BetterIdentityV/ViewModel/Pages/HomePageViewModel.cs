@@ -40,6 +40,7 @@ public partial class HomePageViewModel : ViewModel
     
     private MaskWindow? _maskWindow;
     
+    private readonly ILogger<HomePageViewModel> _logger = App.GetLogger<HomePageViewModel>();
     private readonly TaskTriggerDispatcher _taskDispatcher;
     
     // 记录上次使用游戏的句柄
@@ -106,7 +107,9 @@ public partial class HomePageViewModel : ViewModel
     
     private CaptureModes GetCaptureMode(IntPtr hWnd)
     {
-       return  SystemControl.GetAutoCaptureMode(hWnd, Config.CaptureMode.ToCaptureMode());
+        var mode = SystemControl.GetAutoCaptureMode(hWnd, Config.CaptureMode.ToCaptureMode());
+        _logger.LogDebug($"使用截图模式 {mode}");
+        return mode;
     }
 
     /// <summary>
@@ -123,7 +126,9 @@ public partial class HomePageViewModel : ViewModel
             {
                 var captureWindow = new CaptureTestWindow();
                 var mode = Config.CaptureMode.ToCaptureMode();
-                captureWindow.StartCapture(hWnd, SystemControl.GetAutoCaptureMode(hWnd, mode));
+                mode = SystemControl.GetAutoCaptureMode(hWnd, mode);
+                _logger.LogDebug($"使用截图模式 {mode}");
+                captureWindow.StartCapture(hWnd, mode);
                 captureWindow.Show();
             }
             else
