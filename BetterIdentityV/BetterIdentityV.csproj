@@ -59,6 +59,9 @@
       <None Update="GameTask\AutoPick\Assets\1920x1080\*.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="GameTask\CooldownSoundTrigger\Assets\刹那生灭波形.wav">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>
