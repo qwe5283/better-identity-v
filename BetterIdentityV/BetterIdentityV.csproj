@@ -62,16 +62,15 @@
       <None Update="GameTask\SoundTrigger\Assets\刹那生灭波形.wav">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="GameTask\SoundTrigger\Assets\闪现波形.wav">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\BetterIdentityV.AudioCapture\BetterIdentityV.AudioCapture.csproj" />
       <ProjectReference Include="..\BetterIdentityV.GameCapture\BetterIdentityV.GameCapture.csproj" />
       <ProjectReference Include="..\BetterIdentityV.WindowsInput\BetterIdentityV.WindowsInput.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="GameTask\SoundTrigger\CooldownBlink\" />
     </ItemGroup>
 
 </Project>

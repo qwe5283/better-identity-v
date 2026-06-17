@@ -3,19 +3,19 @@ using BetterIdentityV.Core.Audio;
 using BetterIdentityV.Core.Config;
 using Microsoft.Extensions.Logging;
 
-namespace BetterIdentityV.GameTask.SoundTrigger.DashHit;
+namespace BetterIdentityV.GameTask.SoundTrigger.Blink;
 
-public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
+public class BlinkAudioTrigger : AudioTaskTriggerBase
 {
-    private readonly ILogger<DashHitAudioTrigger> _logger = App.GetLogger<DashHitAudioTrigger>();
-    private readonly DashHitAudioTriggerAssets _assets;
+    private readonly ILogger<BlinkAudioTrigger> _logger = App.GetLogger<BlinkAudioTrigger>();
+    private readonly BlinkAudioTriggerAssets _assets;
 
-    public DashHitAudioTrigger()
+    public BlinkAudioTrigger()
     {
-        _assets = new DashHitAudioTriggerAssets();
+        _assets = new BlinkAudioTriggerAssets();
     }
 
-    public override string Name => "刹那生灭触发器";
+    public override string Name => "闪现触发器";
 
     public override int Priority => 30;
 
@@ -28,7 +28,7 @@ public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
     {
         return new AudioMatchPattern
         {
-            Name = "刹那生灭",
+            Name = "闪现",
             SamplePath = ResolveSamplePath(),
             Threshold = _assets.Threshold,
             Ratio = _assets.Ratio,
