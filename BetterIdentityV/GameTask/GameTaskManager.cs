@@ -25,7 +25,7 @@ public class GameTaskManager
 
         TriggerDictionary.TryAdd("AutoQTE", new AutoQTE.AutoQTETrigger());
         TriggerDictionary.TryAdd("AutoPick", new AutoPick.AutoPickTrigger());
-        TriggerDictionary.TryAdd("SoundTrigger", new CooldownSoundTrigger.SoundTrigger());
+        TriggerDictionary.TryAdd("SoundTrigger", new SoundTrigger.DashHit.DashHitAudioTrigger());
         
         return ConvertToTriggerList();
     }

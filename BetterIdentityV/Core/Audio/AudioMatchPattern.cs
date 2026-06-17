@@ -28,12 +28,12 @@ public class AudioMatchPattern
     /// <summary>
     /// 是否允许连续帧命中时重复触发，默认false。
     /// </summary>
-    public bool AllowSuccessiveTrigger { get; set; }
+    public bool AllowSuccessiveTrigger { get; set; } = false;
 
     /// <summary>
-    /// 两次触发之间的最小冷却时间。
+    /// 两次触发之间的最小冷却时间，默认0.5s。
     /// </summary>
-    public TimeSpan Cooldown { get; set; } = TimeSpan.FromMilliseconds(300);
+    public TimeSpan Cooldown { get; set; } = TimeSpan.FromMilliseconds(500);
 
     /// <summary>
     /// 目标采样率（Hz），音频流和样本将统一重采样到该频率。

@@ -1,18 +1,18 @@
-﻿using BetterIdentityV.Core.Audio;
-using Microsoft.Extensions.Logging;
-using System.IO;
+﻿using System.IO;
+using BetterIdentityV.Core.Audio;
 using BetterIdentityV.Core.Config;
+using Microsoft.Extensions.Logging;
 
-namespace BetterIdentityV.GameTask.CooldownSoundTrigger;
+namespace BetterIdentityV.GameTask.SoundTrigger.DashHit;
 
-public sealed class SoundTrigger : AudioTaskTriggerBase
+public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
 {
-    private readonly ILogger<SoundTrigger> _logger = App.GetLogger<SoundTrigger>();
-    private readonly SoundTriggerAssets _assets;
+    private readonly ILogger<DashHitAudioTrigger> _logger = App.GetLogger<DashHitAudioTrigger>();
+    private readonly DashHitAudioTriggerAssets _assets;
 
-    public SoundTrigger()
+    public DashHitAudioTrigger()
     {
-        _assets = new SoundTriggerAssets();
+        _assets = new DashHitAudioTriggerAssets();
     }
 
     public override string Name => "音频触发器";
@@ -49,6 +49,6 @@ public sealed class SoundTrigger : AudioTaskTriggerBase
             return _assets.SampleFileName;
         }
 
-        return Global.Absolute(Path.Combine(@"GameTask\CooldownSoundTrigger\Assets", _assets.SampleFileName));
+        return Global.Absolute(Path.Combine(@"GameTask\SoundTrigger\Assets", _assets.SampleFileName));
     }
 }

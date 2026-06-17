@@ -1,6 +1,6 @@
 ﻿using BetterIdentityV.Core.Audio;
 
-namespace BetterIdentityV.GameTask.CooldownSoundTrigger;
+namespace BetterIdentityV.GameTask;
 
 public abstract class AudioTaskTriggerBase : ITaskTrigger, IAudioMatchHandler, IDisposable
 {

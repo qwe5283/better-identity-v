@@ -244,6 +244,8 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
         var streamPreprocessor = new AudioPreprocessor(entry.Pattern.SampleRate, entry.Pattern.HighPassCutoffHz);
         var processedCombined = streamPreprocessor.Process(combined);
         var score = entry.Matcher.Match(processedCombined) * entry.Pattern.Ratio;
+        // string timeStr = DateTime.Now.ToString("HH:mm:ss.fff");
+        // Console.WriteLine($"[{timeStr}] Score: {score:F3}");
         var matched = score >= entry.Pattern.Threshold;
         var cooldownElapsed = frame.Timestamp - entry.LastMatchedAt >= entry.Pattern.Cooldown;
 
