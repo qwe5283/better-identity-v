@@ -62,6 +62,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\BetterIdentityV.AudioCapture\BetterIdentityV.AudioCapture.csproj" />
       <ProjectReference Include="..\BetterIdentityV.GameCapture\BetterIdentityV.GameCapture.csproj" />
       <ProjectReference Include="..\BetterIdentityV.WindowsInput\BetterIdentityV.WindowsInput.csproj" />
     </ItemGroup>
