@@ -108,7 +108,7 @@ public partial class HomePageViewModel : ViewModel
     private CaptureModes GetCaptureMode(IntPtr hWnd)
     {
         var mode = SystemControl.GetAutoCaptureMode(hWnd, Config.CaptureMode.ToCaptureMode());
-        _logger.LogDebug($"使用截图模式 {mode}");
+        _logger.LogDebug($"启动截图器，使用截图模式 {mode}");
         return mode;
     }
 
@@ -127,7 +127,7 @@ public partial class HomePageViewModel : ViewModel
                 var captureWindow = new CaptureTestWindow();
                 var mode = Config.CaptureMode.ToCaptureMode();
                 mode = SystemControl.GetAutoCaptureMode(hWnd, mode);
-                _logger.LogDebug($"使用截图模式 {mode}");
+                _logger.LogDebug($"测试图像捕获，使用截图模式 {mode}");
                 captureWindow.StartCapture(hWnd, mode);
                 captureWindow.Show();
             }
