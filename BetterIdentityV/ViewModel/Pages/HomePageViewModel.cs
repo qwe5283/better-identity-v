@@ -207,6 +207,8 @@ public partial class HomePageViewModel : ViewModel
 
     private void AskAdjustGameWindowSize(IntPtr hWnd)
     {
+        if (hWnd == IntPtr.Zero || !TaskDispatcherEnabled) return;
+        
         var info = TaskContext.Instance().SystemInfo;
         if (!info.IsGameRatio16_9 && !info.IsGameFullscreenMode && info.GameProcessName != "MuMuNxDevice")
         {

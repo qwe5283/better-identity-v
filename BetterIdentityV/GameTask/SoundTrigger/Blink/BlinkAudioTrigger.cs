@@ -8,10 +8,12 @@ namespace BetterIdentityV.GameTask.SoundTrigger.Blink;
 public class BlinkAudioTrigger : AudioTaskTriggerBase
 {
     private readonly ILogger<BlinkAudioTrigger> _logger = App.GetLogger<BlinkAudioTrigger>();
+    private readonly SoundTriggerConfig _config;
     private readonly BlinkAudioTriggerAssets _assets;
 
     public BlinkAudioTrigger()
     {
+        _config = TaskContext.Instance().Config.SoundTriggerConfig;
         _assets = new BlinkAudioTriggerAssets();
     }
 
@@ -40,7 +42,7 @@ public class BlinkAudioTrigger : AudioTaskTriggerBase
         };
     }
 
-    protected override bool LoadEnabledFromConfig() => true; // _config.Enabled;
+    protected override bool LoadEnabledFromConfig() => _config.BlinkEnabled;
     
     private string ResolveSamplePath()
     {

@@ -8,10 +8,12 @@ namespace BetterIdentityV.GameTask.SoundTrigger.DashHit;
 public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
 {
     private readonly ILogger<DashHitAudioTrigger> _logger = App.GetLogger<DashHitAudioTrigger>();
+    private readonly SoundTriggerConfig _config;
     private readonly DashHitAudioTriggerAssets _assets;
 
     public DashHitAudioTrigger()
     {
+        _config = TaskContext.Instance().Config.SoundTriggerConfig;
         _assets = new DashHitAudioTriggerAssets();
     }
 
@@ -40,7 +42,7 @@ public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
         };
     }
 
-    protected override bool LoadEnabledFromConfig() => true; // _config.Enabled;
+    protected override bool LoadEnabledFromConfig() => _config.DashHitEnabled;
     
     private string ResolveSamplePath()
     {
