@@ -49,22 +49,23 @@
                 <ColumnDefinition Width="23*" /> <!-- 43 -->
                 <ColumnDefinition Width="250*" /> <!-- 293 -->
                 <ColumnDefinition Width="664*" /> <!-- 957 -->
-                <ColumnDefinition Width="6*" /> <!-- 963 -->
-                <ColumnDefinition Width="936*" /> <!-- 1899 -->
-                <ColumnDefinition Width="1*" /> <!-- 1900 -->
+                <ColumnDefinition Width="6*" /> <!-- 963, Middle -->
+                <ColumnDefinition Width="36*" /> <!-- 999 -->
+                <ColumnDefinition Width="901*" /> <!-- 1900 -->
                 <ColumnDefinition Width="20*" /> <!-- 1920 -->
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="1020*" />
-                <RowDefinition Height="33*" />
-                <RowDefinition Height="22*" />
-                <RowDefinition Height="5*" /> <!-- 1080 -->
+                <RowDefinition Height="570*" /> <!-- 570 -->
+                <RowDefinition Height="60*" /> <!-- 630 -->
+                <RowDefinition Height="370*" /> <!-- 1000 -->
+                <RowDefinition Height="80*" /> <!-- 1080 -->
             </Grid.RowDefinitions>
             
             <!-- 日志和状态 -->
-            <Grid Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="5" Opacity="0.6"
+            <Grid Grid.Column="1" Grid.Row="0" 
+                  Grid.ColumnSpan="5" Grid.RowSpan="3"
                   HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                  Height="213" Width="477">
+                  Opacity="0.6" Height="213" Width="477">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="25" />
                     <RowDefinition Height="188" />
@@ -175,6 +176,20 @@
                        Fill="DarkRed"
                        Opacity="0.2"
                        IsHitTestVisible="False"/>
+            <!-- 冷却可视化 -->
+            <Border Grid.Column="6" Grid.Row="0" Margin="24,0"
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                    Background="#40000000"
+                    CornerRadius="4"
+                    Opacity="0.4"
+                    Visibility="Visible">
+                <TextBlock Margin="4"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Foreground="White"
+                           Text="{Binding CooldownText}"/>
+            </Border>
         </Grid>
     </AdornerDecorator>
     

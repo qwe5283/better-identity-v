@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using BetterIdentityV.Core.Audio;
 using BetterIdentityV.Core.Config;
+using BetterIdentityV.GameTask.Common;
 using Microsoft.Extensions.Logging;
 
 namespace BetterIdentityV.GameTask.SoundTrigger.DashHit;
@@ -10,11 +11,13 @@ public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
     private readonly ILogger<DashHitAudioTrigger> _logger = App.GetLogger<DashHitAudioTrigger>();
     private readonly SoundTriggerConfig _config;
     private readonly DashHitAudioTriggerAssets _assets;
+    private readonly CooldownService _cooldownService;
 
     public DashHitAudioTrigger()
     {
         _config = TaskContext.Instance().Config.SoundTriggerConfig;
         _assets = new DashHitAudioTriggerAssets();
+        _cooldownService = CooldownService.Instance;
     }
 
     public override string Name => "刹那生灭触发器";
@@ -24,6 +27,7 @@ public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
     public override void OnAudioMatched(AudioMatchResult result)
     {
         _logger.LogInformation("音频匹配命中: {Pattern}, Score={Score:F5}", result.PatternName, result.Score);
+        _cooldownService.LastTriggerAbilityTime_DashHit = DateTime.UtcNow;
     }
     
     protected override AudioMatchPattern CreatePattern()

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using BetterIdentityV.Core.Audio;
 using BetterIdentityV.Core.Config;
+using BetterIdentityV.GameTask.Common;
 using Microsoft.Extensions.Logging;
 
 namespace BetterIdentityV.GameTask.SoundTrigger.Blink;
@@ -10,11 +11,13 @@ public class BlinkAudioTrigger : AudioTaskTriggerBase
     private readonly ILogger<BlinkAudioTrigger> _logger = App.GetLogger<BlinkAudioTrigger>();
     private readonly SoundTriggerConfig _config;
     private readonly BlinkAudioTriggerAssets _assets;
+    private readonly CooldownService _cooldownService;
 
     public BlinkAudioTrigger()
     {
         _config = TaskContext.Instance().Config.SoundTriggerConfig;
         _assets = new BlinkAudioTriggerAssets();
+        _cooldownService = CooldownService.Instance;
     }
 
     public override string Name => "闪现触发器";
@@ -24,6 +27,7 @@ public class BlinkAudioTrigger : AudioTaskTriggerBase
     public override void OnAudioMatched(AudioMatchResult result)
     {
         _logger.LogInformation("音频匹配命中: {Pattern}, Score={Score:F5}", result.PatternName, result.Score);
+        _cooldownService.LastTriggerAbilityTime_Blink = DateTime.UtcNow;
     }
     
     protected override AudioMatchPattern CreatePattern()

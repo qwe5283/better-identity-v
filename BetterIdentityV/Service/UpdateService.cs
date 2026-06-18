@@ -84,7 +84,7 @@ public class UpdateService : IUpdateService
             if (root.TryGetProperty("tag_name", out JsonElement tagNameElement))
             {
                 string tagName = tagNameElement.GetString()!;
-                _logger.LogInformation($"最新版本号: {tagName}");
+                _logger.LogInformation($"检查更新，最新版本号: {tagName}");
                 return tagName;
             }
         }
