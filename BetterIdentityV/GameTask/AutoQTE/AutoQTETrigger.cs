@@ -240,9 +240,10 @@ public class AutoQTETrigger : ITaskTrigger, IDisposable, INotifyPropertyChanged
             return frame.Clone();
         }
 
-        var targetHeight = (int)Math.Round(frame.Height * (1920d / frame.Width));
+        // var targetHeight = (int)Math.Round(frame.Height * (1920d / frame.Width));
+        // 截图器截取 1366x768 时 targetHeight = 1079, 因此换用硬编码 1080 高度
         var resized = new Mat();
-        Cv2.Resize(frame, resized, new Size(1920, targetHeight));
+        Cv2.Resize(frame, resized, new Size(1920, 1080));
         return resized;
     }
 
