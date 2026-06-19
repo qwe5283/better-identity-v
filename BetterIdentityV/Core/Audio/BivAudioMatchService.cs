@@ -110,7 +110,7 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
             EnsureStarted(pattern);
         }
 
-        _logger.LogInformation("注册音频匹配模板: {Name}", pattern.Name);
+        _logger.LogDebug("注册音频匹配模板: {Name}", pattern.Name);
         return new AudioMatchSubscription(() => Unregister(entry.Id));
     }
 
@@ -161,7 +161,7 @@ public sealed class BivAudioMatchService : IAudioMatchListener, IDisposable
 
             var name = _entries[index].Pattern.Name;
             _entries.RemoveAt(index);
-            _logger.LogInformation("取消音频匹配模板: {Name}", name);
+            _logger.LogDebug("取消音频匹配模板: {Name}", name);
 
             if (_entries.Count == 0)
             {

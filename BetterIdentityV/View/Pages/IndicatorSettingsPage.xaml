@@ -65,9 +65,14 @@
                                       Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
                                       Text="通过画面或声音分析，可视化冷却时间信息"
                                       TextWrapping="Wrap" />
+                        <ui:ToggleSwitch Grid.Row="0"
+                                         Grid.RowSpan="2"
+                                         Grid.Column="1"
+                                         Margin="0,0,24,0"
+                                         IsChecked="{Binding Config.MaskWindowConfig.ShowCooldown, Mode=TwoWay}"/>
                     </Grid>
                 </ui:CardExpander.Header>
-                <StackPanel>
+                <StackPanel IsEnabled="{Binding Config.MaskWindowConfig.ShowCooldown}">
                     <Grid Margin="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
