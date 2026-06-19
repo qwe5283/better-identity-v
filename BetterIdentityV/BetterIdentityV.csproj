@@ -51,8 +51,8 @@
       <Resource Include="Resources\Images\logo.png" />
       <None Remove="Resources\Fonts\POP1W5.ttf" />
       <Resource Include="Resources\Fonts\POP1W5.ttf" />
-      <None Remove="Resources\Images\banner1.jpg" />
-      <Resource Include="Resources\Images\banner1.jpg" />
+        <None Remove="Resources\Images\banner.jpg" />
+        <Resource Include="Resources\Images\banner.jpg" />
       <None Remove="Resources\Images\logo.ico" />
       <Resource Include="Resources\Images\logo.ico" />
       <None Remove="Resources\Fonts\Fgi-Regular.ttf" />
