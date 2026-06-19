@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using BetterIdentityV.Core.Audio;
 using BetterIdentityV.Core.Config;
-using BetterIdentityV.GameTask.SoundTrigger.DashHit;
+using BetterIdentityV.GameTask.Model;
 using Microsoft.Extensions.Logging;
 
 namespace BetterIdentityV.GameTask.SoundTrigger;
@@ -45,6 +45,11 @@ public abstract class AudioTaskTriggerBase : ITaskTrigger, IAudioMatchHandler, I
 
     public void OnCapture(CaptureContent content)
     {
+    }
+
+    public void OnResolutionChanged(SystemInfo oldInfo, SystemInfo newInfo)
+    {
+        // 音频触发器不依赖游戏画面分辨率
     }
 
     public abstract void OnAudioMatched(AudioMatchResult result);

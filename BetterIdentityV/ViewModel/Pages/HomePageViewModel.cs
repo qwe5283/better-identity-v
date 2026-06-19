@@ -86,9 +86,7 @@ public partial class HomePageViewModel : ViewModel
                     _hWnd = hWnd;
                     _taskDispatcher.Start(hWnd, GetCaptureMode(hWnd), Config.TriggerInterval);
                     _taskDispatcher.UiTaskStopTickEvent -= OnUiTaskStopTick;
-                    _taskDispatcher.UiTaskStartTickEvent -= OnUiTaskStartTick;
                     _taskDispatcher.UiTaskStopTickEvent += OnUiTaskStopTick;
-                    _taskDispatcher.UiTaskStartTickEvent += OnUiTaskStartTick;
                     _maskWindow ??= new MaskWindow(); // 延迟初始化
                     _maskWindow.Show();
                     _maskWindow.Topmost = true;
@@ -198,11 +196,6 @@ public partial class HomePageViewModel : ViewModel
     private void OnUiTaskStopTick(object? sender, EventArgs e)
     {
         UIDispatcherHelper.Invoke(Stop);
-    }
-
-    private void OnUiTaskStartTick(object? sender, EventArgs e)
-    {
-        UIDispatcherHelper.Invoke(() => Start(_hWnd));
     }
 
     private void AskAdjustGameWindowSize(IntPtr hWnd)

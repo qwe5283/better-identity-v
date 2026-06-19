@@ -37,6 +37,21 @@ public class TaskContext
         DpiScale = DpiHelper.ScaleY;
         IsInitialized = true;
     }
+
+    /// <summary>
+    /// 刷新依赖窗口尺寸的系统信息，不重置窗口句柄和输入模拟器
+    /// </summary>
+    public SystemInfo RefreshSystemInfo()
+    {
+        if (!IsInitialized || GameHandle == IntPtr.Zero)
+        {
+            throw new InvalidOperationException("任务上下文尚未初始化");
+        }
+
+        SystemInfo = new SystemInfo(GameHandle, CaptureAreaHandle);
+        UIDispatcherHelper.Invoke(() => DpiScale = DpiHelper.ScaleY);
+        return SystemInfo;
+    }
     
     public bool IsInitialized { get; set; }
 

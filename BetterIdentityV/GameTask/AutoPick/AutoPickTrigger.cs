@@ -2,6 +2,7 @@
 using BetterIdentityV.Core.Recognition;
 using BetterIdentityV.Core.Simulator;
 using BetterIdentityV.GameTask.AutoPick.Assets;
+using BetterIdentityV.GameTask.Model;
 using BetterIdentityV.GameTask.Model.Area;
 using BetterIdentityV.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -19,7 +20,7 @@ public partial class AutoPickTrigger : ObservableObject, ITaskTrigger
     public int Priority => 30;
     public bool IsExclusive => false;
     
-    private readonly AutoPickAssets _assets = AutoPickAssets.Instance;
+    private AutoPickAssets _assets = AutoPickAssets.Instance;
     private TimeSpan _coolDownInterval = TimeSpan.FromSeconds(3);
     [ObservableProperty] private bool _isHealthy = true;
 
@@ -35,6 +36,12 @@ public partial class AutoPickTrigger : ObservableObject, ITaskTrigger
         // 分辨率检查
         var systemInfo = TaskContext.Instance().SystemInfo;
         IsHealthy = systemInfo.IsGameRatio16_9;
+    }
+
+    public void OnResolutionChanged(SystemInfo oldInfo, SystemInfo newInfo)
+    {
+        _assets = AutoPickAssets.Instance;
+        Init();
     }
 
     public void OnCapture(CaptureContent content)

@@ -1,11 +1,15 @@
 ﻿using System.Diagnostics;
+using System.Windows;
 using BetterIdentityV.GameCapture;
+using BetterIdentityV.Helpers;
 using BetterIdentityV.Helpers.Win32;
 using BetterIdentityV.View;
+using BetterIdentityV.View.Drawable;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using Microsoft.Extensions.Logging;
 using Vanara.PInvoke;
+using MessageBox = Wpf.Ui.Violeta.Controls.MessageBox;
 
 namespace BetterIdentityV.GameTask;
 
@@ -35,8 +39,6 @@ public class TaskTriggerDispatcher : IDisposable
     private static readonly object _triggerListLocker = new();
     
     public event EventHandler? UiTaskStopTickEvent;
-
-    public event EventHandler? UiTaskStartTickEvent;
     
     public TaskTriggerDispatcher()
     {
@@ -292,10 +294,9 @@ public class TaskTriggerDispatcher : IDisposable
             if ((Math.Abs(_gameRect.Width - currentRect.Width) > 1 || Math.Abs(_gameRect.Height - currentRect.Height) > 1)
                 && !SizeIsZero(_gameRect) && !SizeIsZero(currentRect))
             {
-                _logger.LogError("► 窗口大小变化 {W}x{H}->{CW}x{CH}, 自动重启截图器中...", _gameRect.Width, _gameRect.Height, currentRect.Width, currentRect.Height);
-                UiTaskStopTickEvent?.Invoke(null, EventArgs.Empty);
-                UiTaskStartTickEvent?.Invoke(null, EventArgs.Empty);
-                _logger.LogInformation("► 游戏窗口大小发生变化，截图器重启完成！");
+                _logger.LogInformation("► 窗口大小变化 {W}x{H}->{CW}x{CH}, 正在刷新分辨率相关资源...", _gameRect.Width, _gameRect.Height, currentRect.Width, currentRect.Height);
+                RefreshResolutionResources();
+                _logger.LogInformation("► 游戏窗口大小发生变化，分辨率相关资源刷新完成！");
             }
             
             _gameRect = new RECT(currentRect);
@@ -305,6 +306,42 @@ public class TaskTriggerDispatcher : IDisposable
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// 刷新依赖游戏分辨率的上下文和触发器资源
+    /// </summary>
+    private void RefreshResolutionResources()
+    {
+        try
+        {
+            var context = TaskContext.Instance();
+            var oldInfo = context.SystemInfo;
+            var newInfo = context.RefreshSystemInfo();
+
+            GameTaskManager.InvalidAssets();
+            VisionContext.Instance().DrawContent.ClearAll();
+
+            if (_triggers == null) return;
+
+            lock (_triggerListLocker)
+            {
+                foreach (var trigger in _triggers)
+                {
+                    trigger.OnResolutionChanged(oldInfo, newInfo);
+                }
+            }
+        }
+        catch (ArgumentException e)
+        {
+            // 捕获分辨率不得小于800x600异常
+            UiTaskStopTickEvent?.Invoke(null, EventArgs.Empty);
+            UIDispatcherHelper.Invoke(() =>
+            {
+                Application.Current.MainWindow?.Activate();
+                MessageBox.Error(e.Message);
+            });
+        }
     }
     
     private bool SizeIsZero(RECT rect)
@@ -328,6 +365,7 @@ public class TaskTriggerDispatcher : IDisposable
             }
 
             _triggers = null;
+            GameTaskManager.ClearTriggers();
         }
     }
     

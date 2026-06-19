@@ -1,4 +1,6 @@
-﻿namespace BetterIdentityV.GameTask;
+using BetterIdentityV.GameTask.Model;
+
+namespace BetterIdentityV.GameTask;
 
 /// <summary>
 /// 触发器接口
@@ -50,4 +52,14 @@ public interface ITaskTrigger
     /// </summary>
     /// <param name="content">捕获的图片等内容</param>
     void OnCapture(CaptureContent content);
+
+    /// <summary>
+    /// 游戏分辨率发生变化后调用，用于刷新依赖分辨率的资源
+    /// </summary>
+    /// <param name="oldInfo">变化前的系统信息</param>
+    /// <param name="newInfo">变化后的系统信息</param>
+    void OnResolutionChanged(SystemInfo oldInfo, SystemInfo newInfo)
+    {
+        Init();
+    }
 }

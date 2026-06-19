@@ -20,7 +20,7 @@ public class GameTaskManager
     /// <returns></returns>
     public static List<ITaskTrigger> LoadInitialTriggers()
     {
-        ReloadAssets();
+        InvalidAssets();
         TriggerDictionary = new ConcurrentDictionary<string, ITaskTrigger>();
 
         TriggerDictionary.TryAdd("AutoQTE", new AutoQTE.AutoQTETrigger());
@@ -53,7 +53,7 @@ public class GameTaskManager
 
     public static void RefreshTriggerConfigs()
     {
-        if (TriggerDictionary is { Count: > 0 })
+        if (TaskContext.Instance().IsInitialized && TriggerDictionary is { Count: > 0 })
         {
             TriggerDictionary.GetValueOrDefault("AutoQTE")?.Init();
             TriggerDictionary.GetValueOrDefault("AutoPick")?.Init();
@@ -64,12 +64,18 @@ public class GameTaskManager
             VisionContext.Instance().DrawContent.ClearAll();
         }
         
-        ReloadAssets();
+        InvalidAssets();
     }
     
-    public static void ReloadAssets()
+    public static void InvalidAssets()
     {
         AutoPickAssets.DestroyInstance();
+    }
+
+    public static void ClearTriggers()
+    {
+        TriggerDictionary = null;
+        InvalidAssets();
     }
     
     /// <summary>
