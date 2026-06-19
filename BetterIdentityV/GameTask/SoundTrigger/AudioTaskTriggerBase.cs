@@ -1,6 +1,10 @@
-﻿using BetterIdentityV.Core.Audio;
+﻿using System.IO;
+using BetterIdentityV.Core.Audio;
+using BetterIdentityV.Core.Config;
+using BetterIdentityV.GameTask.SoundTrigger.DashHit;
+using Microsoft.Extensions.Logging;
 
-namespace BetterIdentityV.GameTask;
+namespace BetterIdentityV.GameTask.SoundTrigger;
 
 public abstract class AudioTaskTriggerBase : ITaskTrigger, IAudioMatchHandler, IDisposable
 {
@@ -8,6 +12,8 @@ public abstract class AudioTaskTriggerBase : ITaskTrigger, IAudioMatchHandler, I
     private bool _isEnabled;
 
     public abstract string Name { get; }
+    
+    protected readonly ILogger<AudioTaskTriggerBase>  Logger = App.GetLogger<AudioTaskTriggerBase>();
 
     public bool IsEnabled
     {
@@ -62,5 +68,15 @@ public abstract class AudioTaskTriggerBase : ITaskTrigger, IAudioMatchHandler, I
         }
 
         _subscription ??= BivAudioMatchService.Instance.Register(CreatePattern(), this);
+    }
+    
+    protected string ResolveSamplePath(string sampleFileName)
+    {
+        if (Path.IsPathRooted(sampleFileName))
+        {
+            return sampleFileName;
+        }
+
+        return Global.Absolute(Path.Combine(@"GameTask\SoundTrigger\Assets", sampleFileName));
     }
 }

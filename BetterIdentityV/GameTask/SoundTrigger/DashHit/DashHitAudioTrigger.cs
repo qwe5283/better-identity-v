@@ -8,7 +8,6 @@ namespace BetterIdentityV.GameTask.SoundTrigger.DashHit;
 
 public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
 {
-    private readonly ILogger<DashHitAudioTrigger> _logger = App.GetLogger<DashHitAudioTrigger>();
     private readonly SoundTriggerConfig _config;
     private readonly DashHitAudioTriggerAssets _assets;
     private readonly CooldownService _cooldownService;
@@ -26,7 +25,7 @@ public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
 
     public override void OnAudioMatched(AudioMatchResult result)
     {
-        _logger.LogInformation("音频匹配命中: {Pattern}, Score={Score:F5}", result.PatternName, result.Score);
+        Logger.LogInformation("音频匹配命中: {Pattern}, Score={Score:F5}", result.PatternName, result.Score);
         _cooldownService.LastTriggerAbilityTime_DashHit = DateTime.UtcNow;
     }
     
@@ -35,7 +34,7 @@ public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
         return new AudioMatchPattern
         {
             Name = "刹那生灭",
-            SamplePath = ResolveSamplePath(),
+            SamplePath = ResolveSamplePath(_assets.SampleFileName),
             Threshold = _assets.Threshold,
             Ratio = _assets.Ratio,
             AllowSuccessiveTrigger = _assets.AllowSuccessiveTrigger,
@@ -48,13 +47,4 @@ public sealed class DashHitAudioTrigger : AudioTaskTriggerBase
 
     protected override bool LoadEnabledFromConfig() => _config.DashHitEnabled;
     
-    private string ResolveSamplePath()
-    {
-        if (Path.IsPathRooted(_assets.SampleFileName))
-        {
-            return _assets.SampleFileName;
-        }
-
-        return Global.Absolute(Path.Combine(@"GameTask\SoundTrigger\Assets", _assets.SampleFileName));
-    }
 }
