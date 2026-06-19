@@ -25,6 +25,9 @@ public class GameTaskManager
 
         TriggerDictionary.TryAdd("AutoQTE", new AutoQTE.AutoQTETrigger());
         TriggerDictionary.TryAdd("AutoPick", new AutoPick.AutoPickTrigger());
+        TriggerDictionary.TryAdd("AquaMirrorSoundTrigger", new SoundTrigger.AquaMirror.AquaMirrorAudioTrigger());
+        TriggerDictionary.TryAdd("DashHitSoundTrigger", new SoundTrigger.DashHit.DashHitAudioTrigger());
+        TriggerDictionary.TryAdd("BlinkSoundTrigger", new SoundTrigger.Blink.BlinkAudioTrigger());
         
         return ConvertToTriggerList();
     }
@@ -54,6 +57,9 @@ public class GameTaskManager
         {
             TriggerDictionary.GetValueOrDefault("AutoQTE")?.Init();
             TriggerDictionary.GetValueOrDefault("AutoPick")?.Init();
+            TriggerDictionary.GetValueOrDefault("AquaMirrorSoundTrigger")?.Init();
+            TriggerDictionary.GetValueOrDefault("DashHitSoundTrigger")?.Init();
+            TriggerDictionary.GetValueOrDefault("BlinkSoundTrigger")?.Init();
             // 清理画布
             VisionContext.Instance().DrawContent.ClearAll();
         }

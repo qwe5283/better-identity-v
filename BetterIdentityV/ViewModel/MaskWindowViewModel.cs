@@ -1,7 +1,10 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
+using System.Windows.Threading;
 using BetterIdentityV.Core.Config;
 using BetterIdentityV.GameTask;
+using BetterIdentityV.GameTask.Common;
 using BetterIdentityV.Helpers;
 using BetterIdentityV.Model;
 using BetterIdentityV.Service.Interface;
@@ -17,8 +20,14 @@ public partial class MaskWindowViewModel : ObservableRecipient
     [ObservableProperty] private Rect _windowRect;
     
     [ObservableProperty] private ObservableCollection<StatusItem> _statusList = [];
+
+    [ObservableProperty] private string _cooldownText;
+    
+    private CooldownService _cooldownService;
     
     public AllConfig? Config { get; set; }
+    
+    private DispatcherTimer _timer;
     
     public MaskWindowViewModel()
     {
@@ -34,6 +43,11 @@ public partial class MaskWindowViewModel : ObservableRecipient
                 UIDispatcherHelper.Invoke(RefreshStatusList);
             }
         });
+        // 更新冷却文本
+        _cooldownService = CooldownService.Instance;
+        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(0.1) };
+        _timer.Tick += (s, e) => UpdateCooldownText();
+        _timer.Start();
     }
     
     private void InitializeStatusList()
@@ -93,5 +107,10 @@ public partial class MaskWindowViewModel : ObservableRecipient
                 Config = configService.Get();
             }
         }
+    }
+
+    private void UpdateCooldownText()
+    {
+        CooldownText = _cooldownService.GetCooldownInfoText();
     }
 }

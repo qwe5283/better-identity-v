@@ -59,9 +59,13 @@
       <None Update="GameTask\AutoPick\Assets\1920x1080\*.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="GameTask\SoundTrigger\Assets\*.wav">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\BetterIdentityV.AudioCapture\BetterIdentityV.AudioCapture.csproj" />
       <ProjectReference Include="..\BetterIdentityV.GameCapture\BetterIdentityV.GameCapture.csproj" />
       <ProjectReference Include="..\BetterIdentityV.WindowsInput\BetterIdentityV.WindowsInput.csproj" />
     </ItemGroup>

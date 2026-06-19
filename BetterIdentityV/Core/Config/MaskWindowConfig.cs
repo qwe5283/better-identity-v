@@ -37,4 +37,10 @@ public partial class MaskWindowConfig : ObservableObject
     /// </summary>
     [ObservableProperty]
     private bool _showAimLine = false;
+    
+    /// <summary>
+    /// 显示技能冷却时间
+    /// </summary>
+    [ObservableProperty]
+    private bool _showCooldown = false;
 }
