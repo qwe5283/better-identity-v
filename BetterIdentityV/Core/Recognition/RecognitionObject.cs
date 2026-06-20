@@ -36,11 +36,6 @@ public class RecognitionObject
     public Mat? TemplateImageGreyMat { get; set; }
 
     /// <summary>
-    /// 模板匹配高斯模糊预处理强度。可选，默认为0。
-    /// </summary>
-    public double BlurSigma { get; set; } = 0;
-
-    /// <summary>
     ///     模板匹配阈值。可选，默认 0.8 。
     /// </summary>
     public double Threshold { get; set; } = 0.8;
