@@ -80,7 +80,6 @@ public class GameTaskManager
     
     /// <summary>
     /// 获取素材图片并缩放
-    /// todo 支持多语言
     /// </summary>
     /// <param name="featName">任务名称</param>
     /// <param name="assertName">素材文件名</param>

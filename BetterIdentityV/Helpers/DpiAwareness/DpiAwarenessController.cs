@@ -7,6 +7,9 @@ using Vanara.PInvoke;
 
 namespace BetterIdentityV.Helpers.DpiAwareness;
 
+/// <summary>
+/// 高分辨率适配器
+/// </summary>
 internal class DpiAwarenessController
 {
     private readonly Window window;
