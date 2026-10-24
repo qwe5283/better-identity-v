@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Windows;
 using System.Windows.Threading;
+using BetterIdentityV.Core.Recognition.ONNX;
 using BetterIdentityV.GameTask;
 using BetterIdentityV.Helpers;
 using BetterIdentityV.Service;
@@ -82,6 +83,7 @@ public partial class App : Application
                 
                 // My Services
                 services.AddSingleton<TaskTriggerDispatcher>();
+                services.AddSingleton<BivOnnxFactory>();
             }
         )
         .Build();
