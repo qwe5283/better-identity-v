@@ -5,6 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:pages="clr-namespace:BetterIdentityV.ViewModel.Pages"
+      xmlns:onnx="clr-namespace:BetterIdentityV.Core.Recognition.ONNX"
       Title="TriggerSettingsPage" 
       d:DataContext="{d:DesignInstance Type=pages:TriggerSettingsPageViewModel}"
       d:DesignHeight="950"
@@ -147,6 +148,61 @@
                     <ui:TextBox Grid.Row="1"
                                 Margin="0,8,24,0"
                                 Text="{Binding Config.AutoTargetConfig.ModelPath, Mode=TwoWay}" />
+                </Grid>
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="AI推理设备" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="DirectML 使用显卡推理，并保留 CPU 回退"
+                                  TextWrapping="Wrap" />
+                    <ComboBox Grid.Row="0"
+                              Grid.RowSpan="2"
+                              Grid.Column="1"
+                              MinWidth="160"
+                              Margin="0,0,24,0"
+                              SelectedValuePath="Tag"
+                              SelectedValue="{Binding Config.AutoTargetConfig.InferenceDevice, Mode=TwoWay}">
+                        <ComboBoxItem Content="CPU" Tag="{x:Static onnx:InferenceDeviceType.Cpu}" />
+                        <ComboBoxItem Content="DirectML（GPU）" Tag="{x:Static onnx:InferenceDeviceType.GpuDirectMl}" />
+                    </ComboBox>
+                </Grid>
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBlock Grid.Row="0"
+                                  Grid.Column="0"
+                                  FontTypography="Body"
+                                  Text="DirectML显卡设备编号" />
+                    <ui:TextBlock Grid.Row="1"
+                                  Grid.Column="0"
+                                  Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
+                                  Text="设备编号从 0 开始；默认使用设备 1，请按本机显卡编号设置"
+                                  TextWrapping="Wrap" />
+                    <ui:TextBox Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                MinWidth="90"
+                                VerticalAlignment="Center"
+                                Margin="0,0,24,0"
+                                Text="{Binding Config.AutoTargetConfig.GpuDevice, Mode=TwoWay}" />
                 </Grid>
                 <Grid Margin="16">
                     <Grid.RowDefinitions>

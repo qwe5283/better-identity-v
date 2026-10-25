@@ -20,7 +20,9 @@
       <PackageReference Include="Emoji.Wpf" Version="0.3.4" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0-rc.1.25451.107" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0-rc.1.25451.107" />
-      <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" />
+      <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.21.0" />
+      <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" IncludeAssets="none" />
+      <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.21.0" />
       <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
       <PackageReference Include="OpenCvSharp4.Extensions" Version="4.11.0.20250507" />
       <PackageReference Include="OpenCvSharp4.Windows" Version="4.11.0.20250507" />

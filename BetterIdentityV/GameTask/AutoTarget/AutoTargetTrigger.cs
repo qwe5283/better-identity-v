@@ -23,12 +23,13 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
 {
     private const string DetectionRectKey = "AutoTarget.Detections";
 
-    private sealed record Settings(string ModelPath, double DeadzoneRadius, int MouseMoveDistance);
+    private sealed record Settings(string ModelPath, double DeadzoneRadius, int MouseMoveDistance,
+        InferenceDeviceType InferenceDevice, int GpuDevice);
 
     private readonly ILogger<AutoTargetTrigger> _logger = App.GetLogger<AutoTargetTrigger>();
     private readonly BivOnnxFactory _onnxFactory = App.ServiceProvider.GetRequiredService<BivOnnxFactory>();
     private readonly object _loopLock = new();
-    private Settings _settings = new("", 30d, 20);
+    private Settings _settings = new("", 30d, 20, InferenceDeviceType.GpuDirectMl, 1);
     private Thread? _workerThread;
     private CancellationTokenSource? _workerCts;
     private volatile bool _isEnabled;
@@ -58,7 +59,7 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
         var config = TaskContext.Instance().Config.AutoTargetConfig;
         var deadzone = double.IsFinite(config.DeadzoneRadius) ? Math.Max(0d, config.DeadzoneRadius) : 30d;
         Volatile.Write(ref _settings, new Settings(config.ModelPath?.Trim() ?? "", deadzone,
-            Math.Max(1, config.MouseMoveDistance)));
+            Math.Max(1, config.MouseMoveDistance), config.InferenceDevice, Math.Max(0, config.GpuDevice)));
         IsEnabled = config.Enabled;
     }
 
@@ -114,7 +115,7 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
     {
         var token = cts.Token;
         BivYoloPredictor? predictor = null;
-        string? loadedModelPath = null;
+        Settings? loadedModelSettings = null;
         var errorLogged = false;
 
         try
@@ -131,7 +132,9 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
                     }
 
                     var settings = Volatile.Read(ref _settings);
-                    if (predictor is null || loadedModelPath != settings.ModelPath)
+                    if (predictor is null || loadedModelSettings?.ModelPath != settings.ModelPath ||
+                        loadedModelSettings?.InferenceDevice != settings.InferenceDevice ||
+                        loadedModelSettings?.GpuDevice != settings.GpuDevice)
                     {
                         ClearDetectionRects();
                         predictor?.Dispose();
@@ -140,10 +143,10 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
                         if (string.IsNullOrWhiteSpace(settings.ModelPath) || !File.Exists(model.ModalPath))
                             throw new FileNotFoundException("目标跟随 ONNX 模型文件不存在", model.ModalPath);
 
-                        predictor = _onnxFactory.CreateYoloPredictor(model);
+                        predictor = _onnxFactory.CreateYoloPredictor(model, settings.InferenceDevice, settings.GpuDevice);
                         // 在工作线程完成延迟加载，避免模型加载阻塞设置页。
                         _ = predictor.Predictor;
-                        loadedModelPath = settings.ModelPath;
+                        loadedModelSettings = settings;
                         _logger.LogInformation("目标跟随模型已加载: {Path}", model.ModalPath);
                     }
 

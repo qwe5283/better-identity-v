@@ -1,3 +1,4 @@
+using BetterIdentityV.Core.Recognition.ONNX;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BetterIdentityV.GameTask.AutoTarget;
@@ -14,6 +15,16 @@ public partial class AutoTargetConfig : ObservableObject
     /// ONNX 模型路径，相对路径以程序所在目录为基准，也支持绝对路径。
     /// </summary>
     [ObservableProperty] private string _modelPath = @"GameTask\AutoTarget\Assets\target.onnx";
+
+    /// <summary>
+    /// 沿用 BetterGI 的 DirectML + CPU 推理方式，也可以手动选择纯 CPU。
+    /// </summary>
+    [ObservableProperty] private InferenceDeviceType _inferenceDevice = InferenceDeviceType.GpuDirectMl;
+
+    /// <summary>
+    /// DirectML 使用的 DXGI 设备编号
+    /// </summary>
+    [ObservableProperty] private int _gpuDevice = 1;
 
     /// <summary>
     /// 画面中心圆形死区的半径，单位为原始截图像素。
