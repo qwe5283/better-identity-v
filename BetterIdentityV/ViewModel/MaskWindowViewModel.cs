@@ -59,6 +59,7 @@ public partial class MaskWindowViewModel : ObservableRecipient
             var triggers = GameTaskManager.TriggerDictionary;
             StatusList.Add(new StatusItem("\u26a1 校准", Config.AutoQTEConfig, "Enabled", triggers?.GetValueOrDefault("AutoQTE")));
             StatusList.Add(new StatusItem("\uf256 拾取", Config.AutoPickConfig, "Enabled", triggers?.GetValueOrDefault("AutoPick")));
+            StatusList.Add(new StatusItem("\u25ce 跟随", Config.AutoTargetConfig, "Enabled", triggers?.GetValueOrDefault("AutoTarget")));
         }
     }
 

@@ -3,6 +3,7 @@ using BetterIdentityV.GameCapture;
 using BetterIdentityV.GameTask;
 using BetterIdentityV.GameTask.AutoPick;
 using BetterIdentityV.GameTask.AutoQTE;
+using BetterIdentityV.GameTask.AutoTarget;
 using BetterIdentityV.GameTask.SoundTrigger;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -48,6 +49,11 @@ public partial class AllConfig : ObservableObject
     /// 自动拾取配置
     /// </summary>
     public AutoPickConfig AutoPickConfig { get; set; } = new();
+
+    /// <summary>
+    /// 自动瞄准配置
+    /// </summary>
+    public AutoTargetConfig AutoTargetConfig { get; set; } = new();
     
     /// <summary>
     /// 音频触发器配置
@@ -64,6 +70,7 @@ public partial class AllConfig : ObservableObject
         CommonConfig.PropertyChanged += OnAnyPropertyChanged;
         AutoQTEConfig.PropertyChanged += OnAnyPropertyChanged;
         AutoPickConfig.PropertyChanged += OnAnyPropertyChanged;
+        AutoTargetConfig.PropertyChanged += OnAnyPropertyChanged;
         SoundTriggerConfig.PropertyChanged += OnAnyPropertyChanged;
     }
     

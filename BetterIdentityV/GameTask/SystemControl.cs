@@ -195,7 +195,7 @@ public class SystemControl
         if (CaptureModes.Auto.Equals(mode))
         {
             string name = GetProcessByHandle(hWnd)!.ProcessName;
-            if (name == "MuMuNxDevice")
+            if (name is "MuMuNxDevice" or "wmplayer" or "firefox")
                 mode = CaptureModes.WindowsGraphicsCapture;
             else
                 mode = CaptureModes.BitBlt;

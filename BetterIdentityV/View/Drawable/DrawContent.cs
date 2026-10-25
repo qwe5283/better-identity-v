@@ -1,5 +1,8 @@
 ﻿using System.Collections.Concurrent;
 
+using System.Windows;
+using System.Windows.Threading;
+
 namespace BetterIdentityV.View.Drawable;
 
 /// <summary>
@@ -7,6 +10,7 @@ namespace BetterIdentityV.View.Drawable;
 /// </summary>
 public class DrawContent
 {
+    private int _rectListRefreshPending;
     
     /// <summary>
     /// 在遮罩窗口上绘制的矩形
@@ -59,6 +63,31 @@ public class DrawContent
         }
     }
     
+    /// <summary>
+    /// 按帧整体替换一组矩形，空结果移除旧框；合并高频更新，异步通知遮罩重绘。
+    /// </summary>
+    public virtual void PutOrRemoveRectList(string key, List<RectDrawable>? rectangles)
+    {
+        if (rectangles is { Count: > 0 })
+        {
+            RectList[key] = rectangles;
+        }
+        else if (!RectList.TryRemove(key, out _))
+        {
+            return;
+        }
+
+        if (Interlocked.Exchange(ref _rectListRefreshPending, 1) != 0)
+            return;
+
+        _ = Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            Interlocked.Exchange(ref _rectListRefreshPending, 0);
+            // 截图线程可能先于遮罩窗口启动，窗口尚未创建时只保留最新绘图数据。
+            Application.Current.Windows.OfType<MaskWindow>().FirstOrDefault()?.Refresh();
+        }, DispatcherPriority.Render);
+    }
+
     public virtual void PutLine(string key, LineDrawable newLine)
     {
         if (LineList.TryGetValue(key, out var prev))
