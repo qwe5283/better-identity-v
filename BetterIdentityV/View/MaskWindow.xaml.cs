@@ -145,7 +145,9 @@ public partial class MaskWindow : Window
     {
         try
         {
-            var count = VisionContext.Instance().DrawContent.RectList.Count + VisionContext.Instance().DrawContent.LineList.Count + VisionContext.Instance().DrawContent.TextList.Count;
+            var drawContent = VisionContext.Instance().DrawContent;
+            var count = drawContent.RectList.Count + drawContent.LineList.Count +
+                        drawContent.TextList.Count + drawContent.Circles.Count;
             if (count == 0)
                 return;
             
@@ -153,7 +155,7 @@ public partial class MaskWindow : Window
             if (!TaskContext.Instance().Config.MaskWindowConfig.DisplayRecognitionResultsOnMask)
                 return;
             
-            foreach (var kv in VisionContext.Instance().DrawContent.RectList)
+            foreach (var kv in drawContent.RectList)
             {
                 foreach (var drawable in kv.Value)
                 {
@@ -166,7 +168,17 @@ public partial class MaskWindow : Window
                 }
             }
             
-            foreach (var kv in VisionContext.Instance().DrawContent.LineList)
+            foreach (var circle in drawContent.Circles.Values)
+            {
+                if (!circle.IsEmpty)
+                {
+                    drawingContext.DrawEllipse(null,
+                        new Pen(new SolidColorBrush(circle.Pen.Color.ToWindowsColor()), circle.Pen.Width),
+                        circle.Center, circle.Radius, circle.Radius);
+                }
+            }
+
+            foreach (var kv in drawContent.LineList)
             {
                 foreach (var drawable in kv.Value)
                 {
@@ -174,7 +186,7 @@ public partial class MaskWindow : Window
                 }
             }
 
-            foreach (var kv in VisionContext.Instance().DrawContent.TextList)
+            foreach (var kv in drawContent.TextList)
             {
                 foreach (var drawable in kv.Value)
                 {

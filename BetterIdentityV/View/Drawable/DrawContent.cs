@@ -10,7 +10,7 @@ namespace BetterIdentityV.View.Drawable;
 /// </summary>
 public class DrawContent
 {
-    private int _rectListRefreshPending;
+    private int _refreshPending;
     
     /// <summary>
     /// 在遮罩窗口上绘制的矩形
@@ -26,6 +26,11 @@ public class DrawContent
     /// 在遮罩窗口上绘制的线段
     /// </summary>
     public ConcurrentDictionary<string, List<LineDrawable>> LineList { get; set; } = new();
+
+    /// <summary>
+    /// 在遮罩窗口上绘制的圆形边界。
+    /// </summary>
+    public ConcurrentDictionary<string, CircleDrawable> Circles { get; } = new();
     
     public virtual void PutRect(string key, RectDrawable newRect, double? confidence = null)
     {
@@ -77,12 +82,37 @@ public class DrawContent
             return;
         }
 
-        if (Interlocked.Exchange(ref _rectListRefreshPending, 1) != 0)
+        RequestRefresh();
+    }
+
+    /// <summary>
+    /// 更新或移除圆形边界，位置和半径未变化时不重复请求重绘。
+    /// </summary>
+    public virtual void PutOrRemoveCircle(string key, CircleDrawable? circle)
+    {
+        if (circle is not null && !circle.IsEmpty)
+        {
+            if (Circles.TryGetValue(key, out var previous) && previous == circle)
+                return;
+
+            Circles[key] = circle;
+        }
+        else if (!Circles.TryRemove(key, out _))
+        {
+            return;
+        }
+
+        RequestRefresh();
+    }
+
+    private void RequestRefresh()
+    {
+        if (Interlocked.Exchange(ref _refreshPending, 1) != 0)
             return;
 
         _ = Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            Interlocked.Exchange(ref _rectListRefreshPending, 0);
+            Interlocked.Exchange(ref _refreshPending, 0);
             // 截图线程可能先于遮罩窗口启动，窗口尚未创建时只保留最新绘图数据。
             Application.Current.Windows.OfType<MaskWindow>().FirstOrDefault()?.Refresh();
         }, DispatcherPriority.Render);
@@ -118,13 +148,14 @@ public class DrawContent
     /// </summary>
     public virtual void ClearAll()
     {
-        if (RectList.IsEmpty && TextList.IsEmpty && LineList.IsEmpty)
+        if (RectList.IsEmpty && TextList.IsEmpty && LineList.IsEmpty && Circles.IsEmpty)
         {
             return;
         }
         RectList.Clear();
         TextList.Clear();
         LineList.Clear();
+        Circles.Clear();
         MaskWindow.Instance().Refresh();
     }
 
