@@ -190,19 +190,30 @@
                     <ui:TextBlock Grid.Row="0"
                                   Grid.Column="0"
                                   FontTypography="Body"
-                                  Text="DirectML显卡设备编号" />
+                                  Text="DirectML显卡" />
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="设备编号从 0 开始；默认使用设备 1，请按本机显卡编号设置"
+                                  Text="选择用于目标检测推理的显卡"
                                   TextWrapping="Wrap" />
-                    <ui:TextBox Grid.Row="0"
-                                Grid.RowSpan="2"
-                                Grid.Column="1"
-                                MinWidth="90"
-                                VerticalAlignment="Center"
-                                Margin="0,0,24,0"
-                                Text="{Binding Config.AutoTargetConfig.GpuDevice, Mode=TwoWay}" />
+                    <ComboBox Grid.Row="0"
+                              Grid.RowSpan="2"
+                              Grid.Column="1"
+                              MinWidth="260"
+                              MaxWidth="360"
+                              VerticalAlignment="Center"
+                              Margin="0,0,24,0"
+                              ItemsSource="{Binding GpuDevices}"
+                              DisplayMemberPath="DisplayName"
+                              SelectedValuePath="DeviceId"
+                              SelectedValue="{Binding Config.AutoTargetConfig.GpuDevice, Mode=TwoWay}">
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="{x:Type ComboBoxItem}"
+                                   BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                                <Setter Property="IsEnabled" Value="{Binding IsAvailable}" />
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
                 </Grid>
                 <Grid Margin="16">
                     <Grid.RowDefinitions>

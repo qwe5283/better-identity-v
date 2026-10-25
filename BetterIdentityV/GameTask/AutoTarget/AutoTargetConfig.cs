@@ -22,9 +22,9 @@ public partial class AutoTargetConfig : ObservableObject
     [ObservableProperty] private InferenceDeviceType _inferenceDevice = InferenceDeviceType.GpuDirectMl;
 
     /// <summary>
-    /// DirectML 使用的 DXGI 设备编号
+    /// DirectML 使用的 DXGI 设备编号，默认为 0
     /// </summary>
-    [ObservableProperty] private int _gpuDevice = 1;
+    [ObservableProperty] private int _gpuDevice;
 
     /// <summary>
     /// 画面中心圆形死区的半径，单位为原始截图像素。

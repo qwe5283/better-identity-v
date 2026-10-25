@@ -252,7 +252,7 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
             return;
 
         Simulation.SendInput.Mouse.MoveMouseBy(moveX, moveY);
-        _logger.LogInformation("发现目标，移动鼠标{MoveX},{MoveY}", moveX, moveY);
+        // _logger.LogInformation("发现目标，移动鼠标{MoveX},{MoveY}", moveX, moveY);
         // Thread.Sleep(20); // 缓解CPU压力
     }
 
