@@ -22,6 +22,7 @@ namespace BetterIdentityV.GameTask.AutoTarget;
 public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
 {
     private const string DetectionRectKey = "AutoTarget.Detections";
+    private const string DeadzoneCircleKey = "AutoTarget.Deadzone";
 
     private sealed record Settings(string ModelPath, double DeadzoneRadius, int MouseMoveDistance,
         InferenceDeviceType InferenceDevice, int GpuDevice);
@@ -71,7 +72,7 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
     public void OnResolutionChanged(SystemInfo oldInfo, SystemInfo newInfo)
     {
         // 每轮直接以原始截图的宽高计算中心，不缓存与分辨率有关的坐标。
-        ClearDetectionRects();
+        ClearDrawings();
     }
 
     private void StartLoop()
@@ -99,7 +100,7 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
         lock (_loopLock)
         {
             _workerCts?.Cancel();
-            ClearDetectionRects();
+            ClearDrawings();
             thread = _workerThread;
         }
 
@@ -126,7 +127,7 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
                 {
                     if (capture is not { IsCapturing: true } || !SystemControl.IsGameActive())
                     {
-                        ClearDetectionRects();
+                        ClearDrawings();
                         token.WaitHandle.WaitOne(50);
                         continue;
                     }
@@ -136,7 +137,7 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
                         loadedModelSettings?.InferenceDevice != settings.InferenceDevice ||
                         loadedModelSettings?.GpuDevice != settings.GpuDevice)
                     {
-                        ClearDetectionRects();
+                        ClearDrawings();
                         predictor?.Dispose();
                         predictor = null;
                         var model = new BivOnnxModel("AutoTarget", settings.ModelPath);
@@ -153,7 +154,7 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
                     using var frame = capture.Capture();
                     if (frame is null || frame.Empty())
                     {
-                        ClearDetectionRects();
+                        ClearDrawings();
                         token.WaitHandle.WaitOne(10);
                         continue;
                     }
@@ -168,7 +169,7 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    ClearDetectionRects();
+                    ClearDrawings();
                     SetHealthy(false);
                     if (!errorLogged)
                     {
@@ -191,7 +192,7 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
             {
                 lock (_loopLock)
                 {
-                    ClearDetectionRects();
+                    ClearDrawings();
                     _workerThread = null;
                     _workerCts = null;
                     cts.Dispose();
@@ -221,6 +222,13 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
         var result = predictor.Predictor.Detect(image);
         // _logger.LogInformation("预测完成，结果数" + result.Count);
 
+        // 绘制、死区判定和移动方向共用自动计算的中心，坐标单位为原始截图像素。
+        var deadzoneCenter = CalculateDeadzoneCenter(frame.Width, frame.Height);
+        var dpiScale = TaskContext.Instance().DpiScale;
+        var deadzoneCircle = new CircleDrawable(
+            new System.Windows.Point(deadzoneCenter.X / dpiScale, deadzoneCenter.Y / dpiScale),
+            settings.DeadzoneRadius / dpiScale, System.Drawing.Pens.Cyan);
+
         // 检测框属于原始整帧像素坐标，使用现有转换处理遮罩窗口的 DPI 缩放。
         var captureRegion = new GameCaptureRegion(frame, 0, 0);
         var rectangles = result.Select((box, index) => captureRegion.ConvertToRectDrawable(
@@ -230,8 +238,17 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
         lock (_loopLock)
         {
             // 推理结束后可能已经停用或失焦，避免重新显示刚清除的旧框。
-            VisionContext.Instance().DrawContent.PutOrRemoveRectList(DetectionRectKey,
-                !token.IsCancellationRequested && _isEnabled && SystemControl.IsGameActive() ? rectangles : null);
+            if (!token.IsCancellationRequested && _isEnabled && SystemControl.IsGameActive())
+            {
+                var drawContent = VisionContext.Instance().DrawContent;
+                // 无目标时仍显示死区边界，便于观察自动定位并调整半径。
+                drawContent.PutOrRemoveCircle(DeadzoneCircleKey, deadzoneCircle);
+                drawContent.PutOrRemoveRectList(DetectionRectKey, rectangles);
+            }
+            else
+            {
+                ClearDrawings();
+            }
         }
 
         if (!result.Any())
@@ -239,13 +256,13 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
 
         // 保留 BetterGI 的原始检测结果顺序，每帧直接取第一个对象，不额外排序。
         var target = result[0];
-        var dx = target.Bounds.X + target.Bounds.Width / 2d - frame.Width / 2d;
-        var dy = target.Bounds.Y + target.Bounds.Height / 2d - frame.Height / 2d;
+        var dx = target.Bounds.X + target.Bounds.Width / 2d - deadzoneCenter.X;
+        var dy = target.Bounds.Y + target.Bounds.Height / 2d - deadzoneCenter.Y;
         var distance = Math.Sqrt(dx * dx + dy * dy);
         if (distance <= settings.DeadzoneRadius)
             return;
 
-        // 屏幕坐标向右为正、向下为正，以单位方向向量乘预设距离进行相对移动。
+        // 相对死区中心计算方向，屏幕坐标向右为正、向下为正。
         var moveX = (int)Math.Round(dx / distance * settings.MouseMoveDistance);
         var moveY = (int)Math.Round(dy / distance * settings.MouseMoveDistance);
         if (token.IsCancellationRequested || !_isEnabled || !SystemControl.IsGameActive())
@@ -256,11 +273,21 @@ public class AutoTargetTrigger : ObservableObject, ITaskTrigger, IDisposable
         // Thread.Sleep(20); // 缓解CPU压力
     }
 
-    private void ClearDetectionRects()
+    private static System.Windows.Point CalculateDeadzoneCenter(int frameWidth, int frameHeight)
+    {
+        // 居中裁出最大 16:9 区域，再将 1280x720 预览中的 (640, 317) 映回整帧。
+        // 居中裁剪不改变区域中点；向上的偏移量使用裁剪区域的高度，而非窗口总高度。
+        var cropHeight = Math.Min(frameHeight, frameWidth * 9d / 16d);
+        return new System.Windows.Point(frameWidth / 2d, frameHeight / 2d - cropHeight * 43d / 720d);
+    }
+
+    private void ClearDrawings()
     {
         lock (_loopLock)
         {
-            VisionContext.Instance().DrawContent.PutOrRemoveRectList(DetectionRectKey, null);
+            var drawContent = VisionContext.Instance().DrawContent;
+            drawContent.PutOrRemoveRectList(DetectionRectKey, null);
+            drawContent.PutOrRemoveCircle(DeadzoneCircleKey, null);
         }
     }
 

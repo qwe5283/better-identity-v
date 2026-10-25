@@ -127,7 +127,7 @@
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="游戏处于前台时检测整个画面，向第一个目标方向相对移动鼠标，进入中心死区后停止"
+                                  Text="游戏处于前台时检测整个画面，向第一个目标方向相对移动鼠标，进入死区后停止"
                                   TextWrapping="Wrap" />
                     <ui:ToggleSwitch Grid.Row="0"
                                      Grid.RowSpan="2"
@@ -227,7 +227,7 @@
                     <ui:TextBlock Grid.Row="0"
                                   Grid.Column="0"
                                   FontTypography="Body"
-                                  Text="中心死区半径（截图像素）" />
+                                  Text="死区半径（截图像素）" />
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
@@ -257,7 +257,7 @@
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="每轮按目标相对画面中心的方向移动此距离"
+                                  Text="每轮按目标相对死区中心的方向移动此距离"
                                   TextWrapping="Wrap" />
                     <ui:TextBox Grid.Row="0"
                                 Grid.RowSpan="2"

@@ -27,7 +27,7 @@ public partial class AutoTargetConfig : ObservableObject
     [ObservableProperty] private int _gpuDevice;
 
     /// <summary>
-    /// 画面中心圆形死区的半径，单位为原始截图像素。
+    /// 圆形死区的半径，单位为原始截图像素。
     /// </summary>
     [ObservableProperty] private double _deadzoneRadius = 30d;
 
