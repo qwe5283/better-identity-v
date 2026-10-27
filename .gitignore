@@ -36,3 +36,5 @@ AGENTS.md
 CLAUDE.md
 
 __pycache__/
+
+/BetterIdentityV/GameTask/AutoTarget/Assets/**/*.onnx
