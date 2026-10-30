@@ -6,11 +6,14 @@ using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
 using BetterIdentityV.Core.Config;
+using BetterIdentityV.Core.Diagnostics;
+using BetterIdentityV.Core.Geometry;
 using BetterIdentityV.Core.Recognition.OpenCv;
 using BetterIdentityV.GameTask;
 using BetterIdentityV.Helpers;
 using BetterIdentityV.Helpers.DpiAwareness;
 using BetterIdentityV.View.Drawable;
+using BetterIdentityV.View.DebugOverlay;
 using Microsoft.Extensions.Logging;
 using Serilog.Sinks.RichTextBox.Abstraction;
 using Vanara.PInvoke;
@@ -33,6 +36,7 @@ public partial class MaskWindow : Window
     private IRichTextBox? _richTextBox;
     
     private readonly ILogger<MaskWindow> _logger = App.GetLogger<MaskWindow>();
+    private readonly DebugOverlayController _debugOverlayController;
 
     static MaskWindow()
     {
@@ -68,6 +72,7 @@ public partial class MaskWindow : Window
             Top = currentRect.Top / dpiScale;
             Width = currentRect.Width / dpiScale;
             Height = currentRect.Height / dpiScale;
+            VisualDebugOverlay.CaptureSize = new ImageSize(currentRect.Width, currentRect.Height);
         });
     }
 
@@ -77,6 +82,7 @@ public partial class MaskWindow : Window
 
         this.SetResourceReference(StyleProperty, typeof(MaskWindow));
         InitializeComponent();
+        _debugOverlayController = new DebugOverlayController(App.GetService<DebugHub>()!, VisualDebugOverlay);
         //this.InitializeDpiAwareness();
 
         LogTextBox.TextChanged += LogTextBoxTextChanged;
@@ -93,6 +99,12 @@ public partial class MaskWindow : Window
         
         RefreshPosition();
         PrintSystemInfo();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _debugOverlayController.Dispose();
+        base.OnClosed(e);
     }
 
     private void PrintSystemInfo()

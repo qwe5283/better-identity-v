@@ -6,6 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:viewModel="clr-namespace:BetterIdentityV.ViewModel"
+        xmlns:debug="clr-namespace:BetterIdentityV.View.DebugOverlay"
         Title="MaskWindow"
         Height="500"
         Width="800"
@@ -61,6 +62,11 @@
                 <RowDefinition Height="80*" /> <!-- 1080 -->
             </Grid.RowDefinitions>
             
+            <!-- 新调试图层覆盖整个捕获区，日志和状态继续显示在其上方。 -->
+            <debug:DebugOverlayControl x:Name="VisualDebugOverlay"
+                                       Grid.ColumnSpan="8" Grid.RowSpan="4"
+                                       Visibility="{Binding Config.MaskWindowConfig.DisplayRecognitionResultsOnMask, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
             <!-- 日志和状态 -->
             <Grid Grid.Column="1" Grid.Row="0" 
                   Grid.ColumnSpan="5" Grid.RowSpan="3"
