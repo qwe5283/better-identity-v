@@ -5,6 +5,7 @@ using BetterIdentityV.Core.Recognition.OpenCv;
 using BetterIdentityV.GameTask.AutoPick.Assets;
 using BetterIdentityV.GameTask.Model;
 using BetterIdentityV.View.Drawable;
+using Microsoft.Extensions.DependencyInjection;
 using OpenCvSharp;
 
 namespace BetterIdentityV.GameTask;
@@ -25,7 +26,9 @@ public class GameTaskManager
 
         TriggerDictionary.TryAdd("AutoQTE", new AutoQTE.AutoQTETrigger());
         TriggerDictionary.TryAdd("AutoPick", new AutoPick.AutoPickTrigger());
-        TriggerDictionary.TryAdd("AutoTarget", new AutoTarget.AutoTargetTrigger());
+        // 由调度器释放触发器，避免根容器保留已结束的临时运行实例。
+        TriggerDictionary.TryAdd("AutoTarget",
+            ActivatorUtilities.CreateInstance<AutoTarget.AutoTargetTrigger>(App.ServiceProvider));
         TriggerDictionary.TryAdd("AquaMirrorSoundTrigger", new SoundTrigger.AquaMirror.AquaMirrorAudioTrigger());
         TriggerDictionary.TryAdd("DashHitSoundTrigger", new SoundTrigger.DashHit.DashHitAudioTrigger());
         TriggerDictionary.TryAdd("BlinkSoundTrigger", new SoundTrigger.Blink.BlinkAudioTrigger());
