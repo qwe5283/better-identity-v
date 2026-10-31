@@ -11,7 +11,7 @@ using BetterIdentityV.View.DebugOverlay;
 
 namespace VisualDebugValidation;
 
-internal static class Program
+internal static partial class Program
 {
     [STAThread]
     private static int Main(string[] args)
@@ -21,6 +21,8 @@ internal static class Program
             CheckGeometryAndMapping();
             CheckSessionLifecycle();
             CheckRendering(args.FirstOrDefault() ?? Path.Combine(AppContext.BaseDirectory, "artifacts"));
+            CheckQteDetection();
+            CheckQteRendering(args.FirstOrDefault() ?? Path.Combine(AppContext.BaseDirectory, "artifacts"));
             CheckWindowLifecycle();
             Console.WriteLine("PASS: all visual debug checks completed.");
             return 0;
