@@ -13,3 +13,12 @@ dotnet run --project tools/VisualDebugValidation -c Debug
 AutoQTE 验证额外覆盖 9 种分辨率下的居中/底对齐裁剪、1080P ROI、红黄检测带和 100%～200% DPI 坐标映射。它将合成的红色指针和黄色目标嵌入原始截图，调用实际裁剪归一化与 OpenCV 检测，检查角度保持一致；同时验证动态标记清理、尺寸变化以及 QTE 与 AutoTarget 会话互不干扰。
 
 QTE 合成预览为 `artifacts/autoqte-1600x1200.png` 和 `artifacts/autoqte-2560x1080.png`。验证不执行按键，实际游戏中的击打时机和后台输入仍需实测。
+
+共享 `AspectRatioViewport` 的验证包括全部 9 种水平/垂直对齐组合、精确和整数边界、近似比例容差、银行家舍入、极小及奇数尺寸；同时检查 AutoTarget 在奇数和近似 16:9 尺寸下的中心坐标保持不变。
+
+主程序运行中锁定默认输出时，可将构建输出隔离，并直接运行新构建的验证程序：
+
+```powershell
+dotnet build tools/VisualDebugValidation -c Debug --artifacts-path Tmp/visual-debug-viewport
+dotnet Tmp/visual-debug-viewport/bin/VisualDebugValidation/debug/VisualDebugValidation.dll
+```

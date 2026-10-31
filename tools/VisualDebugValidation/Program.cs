@@ -18,6 +18,7 @@ internal static partial class Program
     {
         try
         {
+            CheckAspectRatioViewport();
             CheckGeometryAndMapping();
             CheckSessionLifecycle();
             CheckRendering(args.FirstOrDefault() ?? Path.Combine(AppContext.BaseDirectory, "artifacts"));
@@ -41,7 +42,11 @@ internal static partial class Program
             (Size: new ImageSize(1280, 720), Center: new PointD(640, 317)),
             (Size: new ImageSize(1920, 1080), Center: new PointD(960, 475.5)),
             (Size: new ImageSize(2560, 1080), Center: new PointD(1280, 475.5)),
-            (Size: new ImageSize(1600, 1200), Center: new PointD(800, 546.25))
+            (Size: new ImageSize(1600, 1200), Center: new PointD(800, 546.25)),
+            (Size: new ImageSize(2561, 1080), Center: new PointD(1280.5, 475.5)),
+            (Size: new ImageSize(1366, 768), Center: new PointD(683, 338.1333333333333)),
+            (Size: new ImageSize(1080, 1920), Center: new PointD(540, 923.71875)),
+            (Size: new ImageSize(1601, 1201), Center: new PointD(800.5, 546.71640625))
         };
         foreach (var item in cases)
         {
