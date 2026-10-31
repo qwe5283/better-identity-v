@@ -9,27 +9,25 @@ public readonly record struct QTEDetectionResult(double? RedAngle, QTEAngleSpan?
 public class QTEDetector : IDisposable
 {
     private readonly QTEAssets _assets;
+    private readonly QteRegionGeometry _geometry;
     private readonly Point2f _localCenter;
     private readonly Rect _roiRect;
     private readonly bool[] _validAngleMask;
 
     private const int PolarHeight = 720;
-    private const int PolarWidth = QTEAssets.Radius;
+    private readonly int _polarWidth;
     private const double AngleResolution = PolarHeight / 360d;
 
-    public QTEDetector(QTEAssets assets)
+    public QTEDetector(QTEAssets assets, QteRegionGeometry geometry)
     {
         _assets = assets;
-
-        var squareHalf = QTEAssets.Radius + 10;
-        var x1 = Math.Max(0, QTEAssets.ArcCenterX - squareHalf);
-        var y1 = Math.Max(0, QTEAssets.ArcCenterY - squareHalf);
-        var x2 = Math.Min(1920, QTEAssets.ArcCenterX + squareHalf);
-        var y2 = Math.Min(1080, QTEAssets.ArcCenterY + squareHalf);
-
-        _roiRect = new Rect(x1, y1, x2 - x1, y2 - y1);
-        _localCenter = new Point2f(QTEAssets.ArcCenterX - x1, QTEAssets.ArcCenterY - y1);
-        _validAngleMask = BuildValidAngleMask();
+        _geometry = geometry;
+        _polarWidth = (int)geometry.PolarCircle.Radius;
+        var roi = geometry.DetectionBounds;
+        _roiRect = new Rect((int)roi.X, (int)roi.Y, (int)roi.Width, (int)roi.Height);
+        _localCenter = new Point2f((float)(geometry.PolarCircle.Center.X - roi.X),
+            (float)(geometry.PolarCircle.Center.Y - roi.Y));
+        _validAngleMask = BuildValidAngleMask(geometry.RedBand.StartAngle, geometry.RedBand.EndAngle);
     }
 
     public QTEDetectionResult Process(Mat frame1080p)
@@ -63,22 +61,22 @@ public class QTEDetector : IDisposable
         Cv2.WarpPolar(
             maskRed,
             polarRed,
-            new Size(PolarWidth, PolarHeight),
+            new Size(_polarWidth, PolarHeight),
             _localCenter,
-            QTEAssets.Radius,
+            _geometry.PolarCircle.Radius,
             InterpolationFlags.Linear,
             WarpPolarMode.Linear);
         Cv2.WarpPolar(
             maskYellow,
             polarYellow,
-            new Size(PolarWidth, PolarHeight),
+            new Size(_polarWidth, PolarHeight),
             _localCenter,
-            QTEAssets.Radius,
+            _geometry.PolarCircle.Radius,
             InterpolationFlags.Linear,
             WarpPolarMode.Linear);
 
-        var innerYellowRadius = Math.Max(0, QTEAssets.Radius - QTEAssets.Thickness - 5);
-        var innerRedRadius = Math.Max(0, QTEAssets.Radius - QTEAssets.Thickness * 4);
+        var innerYellowRadius = (int)_geometry.YellowBand.InnerRadius;
+        var innerRedRadius = (int)_geometry.RedBand.InnerRadius;
 
         var redAngle = GetRedAngle(polarRed, innerRedRadius);
         var yellowSpan = GetYellowSpan(polarYellow, innerYellowRadius);
@@ -117,7 +115,7 @@ public class QTEDetector : IDisposable
 
     private double? GetRedAngle(Mat polarRed, int innerRadius)
     {
-        var radialThickness = QTEAssets.Radius - innerRadius;
+        var radialThickness = _polarWidth - innerRadius;
         var threshold = radialThickness * 255 * 0.8;
         var maxIndex = -1;
 
@@ -128,7 +126,7 @@ public class QTEDetector : IDisposable
                 continue;
             }
 
-            var sum = SumRowBand(polarRed, angleIndex, innerRadius, QTEAssets.Radius);
+            var sum = SumRowBand(polarRed, angleIndex, innerRadius, _polarWidth);
             if (sum > threshold)
             {
                 maxIndex = angleIndex;
@@ -140,7 +138,7 @@ public class QTEDetector : IDisposable
 
     private QTEAngleSpan? GetYellowSpan(Mat polarYellow, int innerRadius)
     {
-        var radialThickness = QTEAssets.Radius - innerRadius;
+        var radialThickness = _polarWidth - innerRadius;
         var threshold = radialThickness * 255 * 0.2;
         var bestStart = -1;
         var bestEnd = -1;
@@ -151,7 +149,7 @@ public class QTEDetector : IDisposable
         for (var angleIndex = 0; angleIndex < polarYellow.Rows; angleIndex++)
         {
             var valid = _validAngleMask[angleIndex] &&
-                        SumRowBand(polarYellow, angleIndex, innerRadius, QTEAssets.Radius) > threshold;
+                        SumRowBand(polarYellow, angleIndex, innerRadius, _polarWidth) > threshold;
 
             if (valid)
             {
@@ -212,11 +210,11 @@ public class QTEDetector : IDisposable
         return sum;
     }
 
-    private static bool[] BuildValidAngleMask()
+    private static bool[] BuildValidAngleMask(double startAngle, double endAngle)
     {
         var mask = new bool[PolarHeight];
-        var startIndex = (int)(QTEAssets.StartAngle * AngleResolution);
-        var endIndex = (int)(QTEAssets.EndAngle * AngleResolution);
+        var startIndex = (int)(startAngle * AngleResolution);
+        var endIndex = (int)(endAngle * AngleResolution);
 
         for (var i = startIndex; i < endIndex && i < mask.Length; i++)
         {

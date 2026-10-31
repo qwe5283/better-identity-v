@@ -21,3 +21,9 @@ public readonly record struct CircleGeometry(PointD Center, double Radius)
         return dx * dx + dy * dy <= Radius * Radius;
     }
 }
+
+/// <summary>
+/// 图像坐标中的环形扇区，角度从向右方向开始，随图像 Y 轴向下顺时针增加。
+/// </summary>
+public readonly record struct AnnularSectorGeometry(
+    PointD Center, double InnerRadius, double OuterRadius, double StartAngle, double EndAngle);

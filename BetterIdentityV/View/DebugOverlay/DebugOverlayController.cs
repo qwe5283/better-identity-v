@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Threading;
 using BetterIdentityV.Core.Diagnostics;
+using BetterIdentityV.GameTask.AutoQTE;
 using BetterIdentityV.GameTask.AutoTarget;
 using BetterIdentityV.View.DebugOverlay.Presenters;
 
@@ -51,6 +52,7 @@ public sealed class DebugOverlayController : IDisposable
 
         var sessions = _hub.GetSessions();
         var active = sessions.Select(session => session.Id).ToHashSet();
+        // 清理已经不存在的会话及其图层
         foreach (var id in _presentations.Keys.Where(id => !active.Contains(id)).ToArray())
         {
             RemoveLayers(_presentations[id]);
@@ -66,6 +68,7 @@ public sealed class DebugOverlayController : IDisposable
                 IDebugPresenter? presenter = session.Source switch
                 {
                     AutoTargetDebugState.Source => new AutoTargetDebugPresenter(),
+                    AutoQteDebugState.Source => new AutoQteDebugPresenter(),
                     _ => null
                 };
                 if (presenter is null)

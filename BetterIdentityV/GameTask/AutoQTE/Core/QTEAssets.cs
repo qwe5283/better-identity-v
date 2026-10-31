@@ -14,15 +14,6 @@ public class QTEAssets
     public Scalar YellowLower = new Scalar(14, 70, 140);
     public Scalar YellowUpper = new Scalar(23, 140, 255);
 
-    // 圆弧几何参数 (基于1080P)
-    public const int ArcCenterX = 967;
-    public const int ArcCenterY = 900;
-    public const int Radius = 338;
-    public const int Thickness = 22;
-    
-    public const int StartAngle = 200;
-    public const int EndAngle = 340;
-
     // 状态机与鲁棒性参数
     public const double CooldownSec = 1.5;
     public const double NewRedMaxAngle = 215.0;

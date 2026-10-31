@@ -23,6 +23,16 @@ public sealed class RegionLayer : DebugVisualLayer
         context.Pop();
     }
 
+    public void Render(IReadOnlyList<(Geometry Shape, Pen Outline)> regions,
+        CoordinateMapper mapper, OverlayViewport viewport)
+    {
+        using var context = RenderOpen();
+        context.PushClip(new RectangleGeometry(viewport.Bounds));
+        foreach (var region in regions)
+            context.DrawGeometry(null, region.Outline, mapper.Map(region.Shape));
+        context.Pop();
+    }
+
     private static Pen CreateOutline()
     {
         var pen = new Pen(Brushes.Cyan, 1.5);

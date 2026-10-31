@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Media;
 using BetterIdentityV.Core.Geometry;
 
 namespace BetterIdentityV.View.DebugOverlay;
@@ -18,18 +19,39 @@ public readonly record struct OverlayViewport(
 public sealed class CoordinateMapper
 {
     public CoordinateMapper(ImageSize sourceSize, OverlayViewport viewport)
+        : this(new ImageTransform(sourceSize,
+            new RectD(0, 0, viewport.CaptureSize.Width, viewport.CaptureSize.Height)), viewport)
     {
-        if (!sourceSize.IsValid || !viewport.IsValid)
-            throw new ArgumentOutOfRangeException(nameof(sourceSize));
-        ScaleX = viewport.Width / sourceSize.Width;
-        ScaleY = viewport.Height / sourceSize.Height;
+    }
+
+    public CoordinateMapper(ImageTransform transform, OverlayViewport viewport)
+    {
+        if (!transform.SourceSize.IsValid || !viewport.IsValid ||
+            transform.DestinationBounds.Width <= 0 || transform.DestinationBounds.Height <= 0)
+            throw new ArgumentOutOfRangeException(nameof(transform));
+        var captureScaleX = viewport.Width / viewport.CaptureSize.Width;
+        var captureScaleY = viewport.Height / viewport.CaptureSize.Height;
+        ScaleX = transform.ScaleX * captureScaleX;
+        ScaleY = transform.ScaleY * captureScaleY;
+        OffsetX = transform.DestinationBounds.X * captureScaleX;
+        OffsetY = transform.DestinationBounds.Y * captureScaleY;
     }
 
     public double ScaleX { get; }
     public double ScaleY { get; }
+    public double OffsetX { get; }
+    public double OffsetY { get; }
 
-    public Point Map(PointD point) => new(point.X * ScaleX, point.Y * ScaleY);
+    public Point Map(PointD point) => new(OffsetX + point.X * ScaleX, OffsetY + point.Y * ScaleY);
 
-    public Rect Map(RectD rect) => new(rect.X * ScaleX, rect.Y * ScaleY,
+    public Rect Map(RectD rect) => new(OffsetX + rect.X * ScaleX, OffsetY + rect.Y * ScaleY,
         rect.Width * ScaleX, rect.Height * ScaleY);
+
+    public Geometry Map(Geometry shape)
+    {
+        var mapped = shape.Clone();
+        mapped.Transform = new MatrixTransform(ScaleX, 0, 0, ScaleY, OffsetX, OffsetY);
+        mapped.Freeze();
+        return mapped;
+    }
 }

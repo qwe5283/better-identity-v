@@ -24,7 +24,8 @@ public class GameTaskManager
         InvalidAssets();
         TriggerDictionary = new ConcurrentDictionary<string, ITaskTrigger>();
 
-        TriggerDictionary.TryAdd("AutoQTE", new AutoQTE.AutoQTETrigger());
+        TriggerDictionary.TryAdd("AutoQTE",
+            ActivatorUtilities.CreateInstance<AutoQTE.AutoQTETrigger>(App.ServiceProvider));
         TriggerDictionary.TryAdd("AutoPick", new AutoPick.AutoPickTrigger());
         // 由调度器释放触发器，避免根容器保留已结束的临时运行实例。
         TriggerDictionary.TryAdd("AutoTarget",
