@@ -12,22 +12,9 @@ public sealed record QteGeometry(ImageSize ImageSize, RectD CropBounds)
 
     public static QteGeometry Calculate(ImageSize imageSize)
     {
-        if (!imageSize.IsValid)
-            throw new ArgumentOutOfRangeException(nameof(imageSize));
-
-        var width = imageSize.Width;
-        var height = imageSize.Height;
-        var cropWidth = width;
-        var cropHeight = height;
-        // 近似 16:9 的取整分辨率不裁切，Python round 使用银行家舍入。
-        var difference = width / (double)height - 16d / 9;
-        if (difference > 1e-3)
-            cropWidth = Math.Clamp((int)Math.Round(height * 16d / 9), 1, width);
-        else if (difference < -1e-3)
-            cropHeight = Math.Clamp((int)Math.Round(width * 9d / 16), 1, height);
-
-        return new QteGeometry(imageSize,
-            new RectD((width - cropWidth) / 2, height - cropHeight, cropWidth, cropHeight));
+        var viewport = AspectRatioViewport.Calculate(imageSize, new ImageSize(16, 9),
+            HorizontalViewportAlignment.Center, VerticalViewportAlignment.Bottom);
+        return new QteGeometry(imageSize, viewport.PixelBounds);
     }
 }
 
