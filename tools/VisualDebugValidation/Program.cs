@@ -190,7 +190,7 @@ internal static partial class Program
         var hub = new DebugHub();
         var size = new ImageSize(1280, 720);
         var control = new DebugOverlayControl { CaptureSize = size };
-        using var controller = new DebugOverlayController(hub, control);
+        using var controller = new DebugOverlayController(hub, control, new DebugOverlaySettings());
         // 在屏幕外创建真实 WPF 宿主，验证 Loaded、可见性和定时刷新，不激活用户窗口。
         var window = new Window
         {
@@ -283,7 +283,7 @@ internal static partial class Program
             Control.Measure(new Size(width, height));
             Control.Arrange(new Rect(0, 0, width, height));
             Control.UpdateLayout();
-            Controller = new DebugOverlayController(Hub, Control);
+            Controller = new DebugOverlayController(Hub, Control, new DebugOverlaySettings());
         }
 
         public RenderTargetBitmap Render(double dpi = 1)

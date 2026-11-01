@@ -1,30 +1,35 @@
-﻿using System.Windows;
+using System.Windows;
 using BetterIdentityV.Core.Config;
 using BetterIdentityV.Helpers.Ui;
 using BetterIdentityV.Model;
 using BetterIdentityV.Service.Interface;
+using BetterIdentityV.View.DebugOverlay;
 using BetterIdentityV.View.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using Wpf.Ui;
+using Wpf.Ui.Controls;
 
 namespace BetterIdentityV.ViewModel.Pages;
 
 public partial class CommonSettingsPageViewModel : ViewModel
 {
     private readonly INavigationService _navigationService;
+    private readonly DebugOverlaySettings _debugOverlaySettings;
 
     [ObservableProperty] private bool _useAcrylicBackdropProxy;
     
     public AllConfig Config { get; set; }
     
-    public CommonSettingsPageViewModel(IConfigService configService, INavigationService navigationService)
+    public CommonSettingsPageViewModel(IConfigService configService, INavigationService navigationService,
+        DebugOverlaySettings debugOverlaySettings)
     {
         Config = configService.Get();
         UseAcrylicBackdropProxy = Config.CommonConfig.UseAcrylicBackdrop;
         _navigationService = navigationService;
+        _debugOverlaySettings = debugOverlaySettings;
         // 初始化OCR模型选择
         // SelectedPaddleOcrModelConfig = Config.OtherConfig.OcrConfig.PaddleOcrModelConfig;
     }
@@ -42,6 +47,17 @@ public partial class CommonSettingsPageViewModel : ViewModel
         var aboutWindow = new AboutWindow();
         aboutWindow.Owner = Application.Current.MainWindow;
         aboutWindow.ShowDialog();
+    }
+
+    [RelayCommand]
+    private void OpenDebugOverlaySettings()
+    {
+        var dialogWindow = new DebugOverlaySettingsWindow(_debugOverlaySettings)
+        {
+            Owner = Application.Current.MainWindow,
+            WindowBackdropType = WindowBackdropType.Auto,
+        };
+        dialogWindow.ShowDialog();
     }
     
     [RelayCommand]

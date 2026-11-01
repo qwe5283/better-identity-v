@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -82,7 +82,8 @@ public partial class MaskWindow : Window
 
         this.SetResourceReference(StyleProperty, typeof(MaskWindow));
         InitializeComponent();
-        _debugOverlayController = new DebugOverlayController(App.GetService<DebugHub>()!, VisualDebugOverlay);
+        _debugOverlayController = new DebugOverlayController(App.GetService<DebugHub>()!, VisualDebugOverlay,
+            App.GetService<DebugOverlaySettings>()!);
         //this.InitializeDpiAwareness();
 
         LogTextBox.TextChanged += LogTextBoxTextChanged;

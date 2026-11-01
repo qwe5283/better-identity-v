@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using System.Windows.Threading;
 using BetterIdentityV.Core.Diagnostics;
@@ -8,6 +8,7 @@ using BetterIdentityV.Helpers;
 using BetterIdentityV.Service;
 using BetterIdentityV.Service.Interface;
 using BetterIdentityV.View;
+using BetterIdentityV.View.DebugOverlay;
 using BetterIdentityV.View.Pages;
 using BetterIdentityV.ViewModel;
 using BetterIdentityV.ViewModel.Pages;
@@ -86,6 +87,7 @@ public partial class App : Application
                 services.AddSingleton<TaskTriggerDispatcher>();
                 services.AddSingleton<BivOnnxFactory>();
                 services.AddSingleton<DebugHub>();
+                services.AddSingleton<DebugOverlaySettings>();
             }
         )
         .Build();

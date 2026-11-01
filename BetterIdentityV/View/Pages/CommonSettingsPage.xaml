@@ -154,6 +154,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <ui:TextBlock Grid.Row="0"
                                   Grid.Column="0"
@@ -163,13 +164,19 @@
                     <ui:TextBlock Grid.Row="1"
                                   Grid.Column="0"
                                   Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}"
-                                  Text="实时显示各种图像识别的结果"
+                                  Text="实时显示各种图像识别的结果，仅用于调试，内部配置不会保存"
                                   TextWrapping="Wrap" />
                     <ui:ToggleSwitch Grid.Row="0"
                                      Grid.RowSpan="2"
                                      Grid.Column="1"
-                                     Margin="0,0,36,0"
+                                     Margin="0,0,10,0"
                                      IsChecked="{Binding Config.MaskWindowConfig.DisplayRecognitionResultsOnMask, Mode=TwoWay}" />
+                    <ui:Button Grid.Row="0"
+                               Grid.RowSpan="2"
+                               Grid.Column="2"
+                               Margin="0,0,36,0"
+                               Command="{Binding OpenDebugOverlaySettingsCommand}"
+                               Content="自定义" />
                 </Grid>
             </StackPanel>
         </ui:CardExpander>

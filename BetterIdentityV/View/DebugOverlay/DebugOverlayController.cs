@@ -21,14 +21,16 @@ public sealed class DebugOverlayController : IDisposable
 
     private readonly DebugHub _hub;
     private readonly DebugOverlayControl _control;
+    private readonly DebugOverlaySettings _settings;
     private readonly DispatcherTimer _timer;
     private readonly Dictionary<Guid, Presentation> _presentations = new();
     private bool _isDisposed;
 
-    public DebugOverlayController(DebugHub hub, DebugOverlayControl control)
+    public DebugOverlayController(DebugHub hub, DebugOverlayControl control, DebugOverlaySettings settings)
     {
         _hub = hub;
         _control = control;
+        _settings = settings;
         _timer = new DispatcherTimer(DispatcherPriority.Render, control.Dispatcher)
         {
             // 以 30 FPS 频率渲染调试图形
@@ -78,6 +80,11 @@ public sealed class DebugOverlayController : IDisposable
                 foreach (var layer in presenter.Layers)
                     _control.AddLayer(layer);
             }
+
+            // 任务级显示开关独立于快照版本；隐藏期间仍更新最新诊断绘图。
+            var opacity = _settings.IsVisible(session.Source) ? 1 : 0;
+            foreach (var layer in presentation.Presenter.Layers)
+                layer.Opacity = opacity;
 
             if (presentation.Version == session.Version && presentation.Viewport == viewport)
                 continue;
